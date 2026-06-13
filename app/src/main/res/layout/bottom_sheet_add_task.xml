@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="@drawable/bg_bottom_sheet"
+    android:paddingStart="20dp"
+    android:paddingEnd="20dp"
+    android:paddingTop="16dp"
+    android:paddingBottom="40dp">
+
+    <View
+        android:layout_width="36dp"
+        android:layout_height="4dp"
+        android:background="@drawable/bg_bottom_handle"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginBottom="20dp"/>
+
+    <TextView
+        android:id="@+id/tvSheetTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="+ NOUVELLE MISSION"
+        android:fontFamily="sans-serif-black"
+        android:textSize="14sp"
+        android:textColor="@color/neon_cyan"
+        android:letterSpacing="0.12"
+        android:layout_marginBottom="20dp"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="NOM DE LA MISSION"
+        android:fontFamily="sans-serif-medium"
+        android:textSize="11sp"
+        android:textColor="@color/text_muted"
+        android:layout_marginBottom="6dp"/>
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+        android:layout_marginBottom="16dp"
+        app:boxStrokeColor="@color/neon_cyan"
+        app:boxBackgroundColor="#0D1421">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/etTaskName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Ex: Réviser le projet..."
+            android:textColor="@color/white"
+            android:textSize="14sp"
+            android:inputType="textCapSentences"/>
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="DURÉE FOCUS (OPTIONNEL)"
+        android:fontFamily="sans-serif-medium"
+        android:textSize="11sp"
+        android:textColor="@color/text_muted"
+        android:layout_marginBottom="6dp"/>
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+        android:layout_marginBottom="16dp"
+        app:boxStrokeColor="@color/neon_cyan"
+        app:boxBackgroundColor="#0D1421">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/etCustomFocus"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Minutes (Vide = Simple rappel)"
+            android:textColor="@color/white"
+            android:textSize="14sp"
+            android:inputType="number"/>
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="RÉPÉTITION"
+        android:fontFamily="sans-serif-medium"
+        android:textSize="11sp"
+        android:textColor="@color/text_muted"
+        android:layout_marginBottom="8dp"/>
+
+    <HorizontalScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:scrollbars="none"
+        android:layout_marginBottom="16dp">
+
+        <com.google.android.material.chip.ChipGroup
+            android:id="@+id/chipGroupRepeat"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:singleSelection="true">
+
+            <com.google.android.material.chip.Chip android:id="@+id/chipRepeatNone" android:layout_width="wrap_content" android:layout_height="wrap_content" style="@style/RepeatChip" android:text="AUCUN" android:checked="true"/>
+            <com.google.android.material.chip.Chip android:id="@+id/chipRepeatDaily" android:layout_width="wrap_content" android:layout_height="wrap_content" style="@style/RepeatChip" android:text="QUOTIDIEN"/>
+            <com.google.android.material.chip.Chip android:id="@+id/chipMon" android:layout_width="wrap_content" android:layout_height="wrap_content" style="@style/RepeatChip" android:text="LUN"/>
+            <com.google.android.material.chip.Chip android:id="@+id/chipTue" android:layout_width="wrap_content" android:layout_height="wrap_content" style="@style/RepeatChip" android:text="MAR"/>
+            <com.google.android.material.chip.Chip android:id="@+id/chipWed" android:layout_width="wrap_content" android:layout_height="wrap_content" style="@style/RepeatChip" android:text="MER"/>
+            <com.google.android.material.chip.Chip android:id="@+id/chipThu" android:layout_width="wrap_content" android:layout_height="wrap_content" style="@style/RepeatChip" android:text="JEU"/>
+            <com.google.android.material.chip.Chip android:id="@+id/chipFri" android:layout_width="wrap_content" android:layout_height="wrap_content" style="@style/RepeatChip" android:text="VEN"/>
+            <com.google.android.material.chip.Chip android:id="@+id/chipSat" android:layout_width="wrap_content" android:layout_height="wrap_content" style="@style/RepeatChip" android:text="SAM"/>
+            <com.google.android.material.chip.Chip android:id="@+id/chipSun" android:layout_width="wrap_content" android:layout_height="wrap_content" style="@style/RepeatChip" android:text="DIM"/>
+            <com.google.android.material.chip.Chip android:id="@+id/chipRepeatSpecific" android:layout_width="wrap_content" android:layout_height="wrap_content" style="@style/RepeatChip" android:text="DATE…"/>
+
+        </com.google.android.material.chip.ChipGroup>
+    </HorizontalScrollView>
+
+    <LinearLayout
+        android:id="@+id/layoutTimePicker"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:background="@drawable/bg_stat_cell"
+        android:padding="12dp"
+        android:layout_marginBottom="16dp"
+        android:visibility="gone">
+
+        <TextView
+            android:id="@+id/tvSelectedTime"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:text="09:00"
+            android:textColor="@color/white"
+            android:textStyle="bold"
+            android:textSize="14sp"/>
+
+        <TextView
+            android:id="@+id/btnPickTime"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="MODIFIER L'HEURE"
+            android:textColor="@color/neon_cyan"
+            android:textSize="11sp"
+            android:textStyle="bold"/>
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/layoutDatePicker"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:background="@drawable/bg_stat_cell"
+        android:padding="12dp"
+        android:layout_marginBottom="24dp"
+        android:visibility="gone">
+
+        <TextView
+            android:id="@+id/tvSelectedDate"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:text="Choisir une date..."
+            android:textColor="@color/text_muted"
+            android:textSize="14sp"/>
+
+        <TextView
+            android:id="@+id/btnPickDate"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="CALENDRIER"
+            android:textColor="@color/neon_cyan"
+            android:textSize="11sp"
+            android:textStyle="bold"/>
+    </LinearLayout>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnCreateTask"
+        style="@style/ButtonPrimary"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:text="ENREGISTRER LA MISSION"
+        android:textColor="@color/white" />
+
+</LinearLayout>

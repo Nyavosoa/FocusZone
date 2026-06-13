@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#ED070B14"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:padding="40dp">
+
+        <TextView
+            android:id="@+id/tvFocusPhase"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="■ MODE FOCUS ACTIF ■"
+            android:fontFamily="sans-serif"
+            android:textSize="12sp"
+            android:letterSpacing="0.3"
+            android:textColor="@color/neon_cyan"
+            android:layout_marginBottom="32dp"/>
+
+        <TextView
+            android:id="@+id/tvFocusBigTimer"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="25:00"
+            android:fontFamily="sans-serif"
+            android:textSize="80sp"
+            android:textColor="@color/text_primary"
+            android:letterSpacing="-0.04"
+            android:includeFontPadding="false"
+            android:layout_marginBottom="48dp"/>
+
+        <TextView
+            android:id="@+id/btnExitFocus"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="⊗ RETOUR"
+            android:fontFamily="sans-serif"
+            android:textSize="10sp"
+            android:letterSpacing="0.15"
+            android:textColor="@color/neon_red"
+            android:padding="14dp"
+            android:background="@drawable/bg_exit_btn"
+            android:clickable="true"
+            android:focusable="true"/>
+
+    </LinearLayout>
+
+    <!-- Animation Overlay -->
+    <LinearLayout
+        android:id="@+id/congratulationsOverlay"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#AA000000"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:visibility="gone"
+        android:clickable="true"
+        android:focusable="true">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="🎉"
+            android:textSize="100sp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="SESSION RÉUSSIE !"
+            android:textColor="@color/neon_cyan"
+            android:textSize="28sp"
+            android:textStyle="bold"
+            android:fontFamily="sans-serif"
+            android:letterSpacing="0.1" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Tes jeux restent débloqués"
+            android:textColor="@color/white"
+            android:textSize="18sp"
+            android:layout_marginTop="12dp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="+25 XP gagnés"
+            android:textColor="@color/neon_gold"
+            android:textSize="16sp"
+            android:layout_marginTop="8dp" />
+
+    </LinearLayout>
+
+</FrameLayout>

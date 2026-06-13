@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/bg_deep">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <!-- Level Hero -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@drawable/bg_rewards_hero"
+            android:gravity="center"
+            android:paddingTop="28dp"
+            android:paddingBottom="24dp"
+            android:paddingStart="20dp"
+            android:paddingEnd="20dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="NIVEAU"
+                android:fontFamily="sans-serif"
+                android:textSize="9sp"
+                android:letterSpacing="0.3"
+                android:textColor="@color/text_muted"/>
+
+            <TextView
+                android:id="@+id/tvLevel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="1"
+                android:fontFamily="sans-serif"
+                android:textSize="64sp"
+                android:textColor="@color/neon_gold"
+                android:lineHeight="64sp"
+                android:includeFontPadding="false"/>
+
+            <TextView
+                android:id="@+id/tvLevelTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="⚔ NOVICE ⚔"
+                android:fontFamily="sans-serif"
+                android:textSize="12sp"
+                android:textColor="@color/neon_gold"
+                android:letterSpacing="0.12"
+                android:layout_marginBottom="20dp"/>
+
+            <!-- XP Progress bar -->
+            <com.google.android.material.progressindicator.LinearProgressIndicator
+                android:id="@+id/xpProgressBar"
+                android:layout_width="match_parent"
+                android:layout_height="10dp"
+                app:trackColor="#1AFFD700"
+                app:indicatorColor="@color/neon_gold"
+                app:trackCornerRadius="5dp"
+                android:progress="0"
+                android:max="100"
+                android:layout_marginBottom="10dp"/>
+
+            <TextView
+                android:id="@+id/tvXpProgress"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="0 / 1000 XP : Niveau 2"
+                android:fontFamily="sans-serif"
+                android:textSize="10sp"
+                android:textColor="@color/text_muted"/>
+
+        </LinearLayout>
+
+        <!-- Unlocked rewards section -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="RÉCOMPENSES DÉBLOQUÉES"
+            android:fontFamily="sans-serif"
+            android:textSize="9sp"
+            android:letterSpacing="0.25"
+            android:textColor="@color/text_muted"
+            android:paddingStart="20dp"
+            android:paddingTop="20dp"
+            android:paddingBottom="8dp"/>
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rvRewards"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingStart="20dp"
+            android:paddingEnd="20dp"
+            android:nestedScrollingEnabled="false"/>
+
+        <!-- Upcoming rewards section -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="PROCHAINES RÉCOMPENSES"
+            android:fontFamily="sans-serif"
+            android:textSize="9sp"
+            android:letterSpacing="0.25"
+            android:textColor="@color/text_muted"
+            android:paddingStart="20dp"
+            android:paddingTop="20dp"
+            android:paddingBottom="8dp"/>
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rvUpcomingRewards"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingStart="20dp"
+            android:paddingEnd="20dp"
+            android:paddingBottom="16dp"
+            android:nestedScrollingEnabled="false"/>
+
+    </LinearLayout>
+</ScrollView>

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/timerFragment"
+        android:icon="@drawable/ic_timer_nav"
+        android:title="@string/tab_timer"/>
+
+    <item
+        android:id="@+id/tasksFragment"
+        android:icon="@drawable/ic_tasks_nav"
+        android:title="@string/tab_tasks"/>
+
+    <item
+        android:id="@+id/rewardsFragment"
+        android:icon="@drawable/ic_rewards_nav"
+        android:title="@string/tab_rewards"/>
+
+    <item
+        android:id="@+id/penaltyFragment"
+        android:icon="@drawable/ic_penalty_nav"
+        android:title="@string/tab_penalty"/>
+
+</menu>

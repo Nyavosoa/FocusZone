@@ -1,0 +1,34 @@
+<resources>
+    <string name="app_name">FocusZone</string>
+    <string name="tab_timer">Chrono</string>
+    <string name="tab_tasks">Missions</string>
+    <string name="tab_rewards">XP</string>
+    <string name="tab_penalty">Pénalité</string>
+    <string name="focus_mode">FOCUS</string>
+    <string name="pause_mode">PAUSE</string>
+    <string name="session_count">Session %1$d / 4</string>
+    <string name="start">Démarrer</string>
+    <string name="pause">Pause</string>
+    <string name="reset">Réinitialiser</string>
+    <string name="focus_duration">Durée Focus</string>
+    <string name="pause_duration">Durée Pause</string>
+    <string name="add_task">+ MISSION</string>
+    <string name="task_name_hint">Nom de la mission…</string>
+    <string name="notification_channel_timer">Chrono FocusZone</string>
+    <string name="notification_channel_tasks">Rappels Missions</string>
+    <string name="notification_title_focus">Focus en cours</string>
+    <string name="notification_text_focus">Session %1$s — %2$s restantes</string>
+    <string name="penalty_title">PÉNALITÉ ACTIVE</string>
+    <string name="penalty_desc">Tu as manqué des sessions. Tes jeux sont bloqués.</string>
+    <string name="unlock_cta">▶ COMMENCER LE FOCUS</string>
+    <string name="level_label">NIVEAU</string>
+    <string name="xp_progress">%1$d / %2$d XP → Niveau %3$d</string>
+    <string name="sessions_today">Sessions</string>
+    <string name="xp_today">XP aujourd\'hui</string>
+    <string name="focus_total">Focus total</string>
+    <string name="min_unit">min</string>
+    <string name="accessibility_service_description">FocusZone utilise ce service pour bloquer les applications de jeu pendant les pénalités.</string>
+
+    <string name="streak_format">🔥 %1$d</string>
+    <string name="xp_badge_format">⬡ %1$s XP</string>
+</resources>

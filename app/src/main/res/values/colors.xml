@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Background colors -->
+    <color name="bg_deep">#070B14</color>
+    <color name="bg_card">#0D1421</color>
+    <color name="bg_panel">#111827</color>
+    <color name="bg_surface">#13203A</color>
+
+    <!-- Neon accent colors -->
+    <color name="neon_cyan">#00F5FF</color>
+    <color name="neon_cyan_30">#4D00F5FF</color>
+    <color name="neon_cyan_10">#1A00F5FF</color>
+    <color name="neon_purple">#BF00FF</color>
+    <color name="neon_purple_20">#33BF00FF</color>
+    <color name="neon_gold">#FFD700</color>
+    <color name="neon_gold_20">#33FFD700</color>
+    <color name="neon_red">#FF2D55</color>
+    <color name="neon_red_20">#33FF2D55</color>
+    <color name="neon_green">#39FF14</color>
+    <color name="neon_green_20">#3339FF14</color>
+    <color name="neon_orange">#FF8C00</color>
+
+    <!-- Text colors (Optimisés pour la visibilité) -->
+    <color name="text_primary">#FFFFFF</color>
+    <color name="text_muted">#A0B3D1</color> <!-- Éclairci -->
+    <color name="text_hint">#7085A8</color>  <!-- Éclairci -->
+
+    <!-- Border colors -->
+    <color name="border_subtle">#1A00F5FF</color>
+    <color name="border_normal">#2600F5FF</color>
+
+    <!-- Priority colors -->
+    <color name="priority_high">#FF2D55</color>
+    <color name="priority_med">#FFD700</color>
+    <color name="priority_low">#00F5FF</color>
+
+    <!-- System -->
+    <color name="white">#FFFFFF</color>
+    <color name="black">#000000</color>
+    <color name="transparent">#00000000</color>
+</resources>

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/timerFragment">
+
+    <fragment
+        android:id="@+id/timerFragment"
+        android:name="com.focuszone.app.ui.timer.TimerFragment"
+        android:label="Timer"/>
+
+    <fragment
+        android:id="@+id/tasksFragment"
+        android:name="com.focuszone.app.ui.tasks.TasksFragment"
+        android:label="Missions"/>
+
+    <fragment
+        android:id="@+id/rewardsFragment"
+        android:name="com.focuszone.app.ui.rewards.RewardsFragment"
+        android:label="XP"/>
+
+    <fragment
+        android:id="@+id/penaltyFragment"
+        android:name="com.focuszone.app.ui.penalty.PenaltyFragment"
+        android:label="Pénalité"/>
+
+</navigation>

@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:gravity="center_vertical"
+    android:paddingTop="12dp"
+    android:paddingBottom="12dp"
+    android:background="@drawable/bg_blocked_app_divider">
+
+    <!-- App icon box -->
+    <FrameLayout
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_marginEnd="12dp"
+        android:background="@drawable/bg_app_icon_box">
+
+        <TextView
+            android:id="@+id/tvAppIcon"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="🎮"
+            android:textSize="20sp"/>
+
+        <!-- Lock overlay badge -->
+        <TextView
+            android:layout_width="16dp"
+            android:layout_height="16dp"
+            android:layout_gravity="bottom|end"
+            android:text="🔒"
+            android:textSize="10sp"
+            android:gravity="center"
+            android:layout_marginEnd="-3dp"
+            android:layout_marginBottom="-3dp"/>
+
+    </FrameLayout>
+
+    <!-- App name -->
+    <TextView
+        android:id="@+id/tvAppName"
+        android:layout_width="0dp"
+        android:layout_weight="1"
+        android:layout_height="wrap_content"
+        android:text="Mobile Legends"
+        android:fontFamily="sans-serif"
+        android:textSize="14sp"
+        android:textColor="@color/text_muted"/>
+
+    <!-- Blocked badge -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="BLOQUÉ"
+        android:fontFamily="sans-serif"
+        android:textSize="8sp"
+        android:textColor="@color/neon_red"
+        android:paddingStart="7dp"
+        android:paddingEnd="7dp"
+        android:paddingTop="3dp"
+        android:paddingBottom="3dp"
+        android:background="@drawable/bg_badge_blocked"/>
+
+</LinearLayout>

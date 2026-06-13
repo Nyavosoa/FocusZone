@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/bg_deep">
+
+    <!-- Grid bg (Arrière-plan) -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@drawable/bg_grid"
+        android:alpha="0.3"/>
+
+    <!-- Contenu principal -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:gravity="center_horizontal"
+        android:padding="28dp">
+
+        <!-- Logo -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="FOCUSZONE"
+            android:fontFamily="sans-serif"
+            android:textSize="13sp"
+            android:letterSpacing="0.2"
+            android:textColor="@color/neon_cyan"
+            android:layout_marginBottom="32dp"/>
+
+        <!-- Icon -->
+        <TextView
+            android:id="@+id/onbIcon"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="⚔"
+            android:textSize="56sp"
+            android:gravity="center"
+            android:layout_marginBottom="20dp"/>
+
+        <!-- Title -->
+        <TextView
+            android:id="@+id/onbTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Bienvenue dans FocusZone"
+            android:fontFamily="sans-serif"
+            android:textSize="16sp"
+            android:textColor="@color/neon_cyan"
+            android:letterSpacing="0.08"
+            android:gravity="center"
+            android:layout_marginBottom="14dp"/>
+
+        <!-- Description -->
+        <TextView
+            android:id="@+id/onbDesc"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="13sp"
+            android:textColor="@color/text_muted"
+            android:gravity="center"
+            android:lineSpacingMultiplier="1.6"
+            android:layout_marginBottom="24dp"/>
+
+        <!-- Permission box -->
+        <LinearLayout
+            android:id="@+id/permBox"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@drawable/bg_penalty_banner"
+            android:padding="14dp"
+            android:layout_marginBottom="24dp"
+            android:visibility="gone">
+
+            <TextView
+                android:id="@+id/permTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="sans-serif"
+                android:textSize="10sp"
+                android:textColor="@color/neon_red"
+                android:layout_marginBottom="10dp"/>
+
+            <TextView
+                android:id="@+id/permItems"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="12sp"
+                android:textColor="@color/text_muted"
+                android:lineSpacingMultiplier="1.7"/>
+        </LinearLayout>
+
+        <View android:layout_width="0dp" android:layout_height="0dp" android:layout_weight="1"/>
+
+        <!-- Dots Container -->
+        <LinearLayout
+            android:id="@+id/dotContainer"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:layout_marginBottom="20dp"/>
+
+        <!-- Next button -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnNext"
+            style="@style/ButtonPrimary"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:layout_marginBottom="12dp"
+            android:text="SUIVANT" />
+
+        <!-- Skip button -->
+        <TextView
+            android:id="@+id/btnSkip"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Passer"
+            android:textSize="12sp"
+            android:textColor="@color/text_hint"
+            android:textStyle="italic"
+            android:paddingTop="4dp"
+            android:paddingBottom="4dp"/>
+    </LinearLayout>
+</FrameLayout>
