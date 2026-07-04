@@ -7,11 +7,17 @@ import com.focuszone.app.data.model.Task
 @Dao
 interface TaskDao {
 
-    @Query("SELECT * FROM tasks ORDER BY createdAt DESC")
+    @Query("SELECT * FROM tasks ORDER BY isCompleted ASC, createdAt DESC")
     fun getAllTasks(): LiveData<List<Task>>
 
     @Query("SELECT * FROM tasks WHERE isCompleted = 0 ORDER BY createdAt DESC")
     fun getActiveTasks(): LiveData<List<Task>>
+
+    @Query("SELECT * FROM tasks WHERE isCompleted = 0")
+    suspend fun getActiveTasksSync(): List<Task>
+
+    @Query("SELECT * FROM tasks WHERE id = :taskId")
+    suspend fun getTaskById(taskId: Long): Task?
 
     @Query("SELECT COUNT(*) FROM tasks WHERE isCompleted = 0")
     suspend fun getPendingTasksCount(): Int

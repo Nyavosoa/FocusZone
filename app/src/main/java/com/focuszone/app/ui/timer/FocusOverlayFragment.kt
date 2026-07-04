@@ -11,6 +11,7 @@ import androidx.core.view.WindowInsetsControllerCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import com.focuszone.app.R
+import com.focuszone.app.ui.MainActivity
 import com.focuszone.app.viewmodel.TimerMode
 import com.focuszone.app.viewmodel.TimerState
 import com.focuszone.app.viewmodel.TimerViewModel
@@ -19,6 +20,7 @@ class FocusOverlayFragment : Fragment() {
 
     private val viewModel: TimerViewModel by activityViewModels()
     private var isPenalized = false
+    private var isSuccessFinished = false
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         applyFullScreen(true)
@@ -29,6 +31,7 @@ class FocusOverlayFragment : Fragment() {
         val tvTime = view.findViewById<TextView>(R.id.tvFocusBigTimer)
         val tvPhase = view.findViewById<TextView>(R.id.tvFocusPhase)
         val btnExit = view.findViewById<TextView>(R.id.btnExitFocus)
+        val mainContent = view.findViewById<View>(R.id.focusMainContent)
         val congratulationsOverlay = view.findViewById<View>(R.id.congratulationsOverlay)
 
         viewModel.remainingSeconds.observe(viewLifecycleOwner) { seconds ->
@@ -36,24 +39,45 @@ class FocusOverlayFragment : Fragment() {
         }
         
         viewModel.timerMode.observe(viewLifecycleOwner) { mode ->
-            tvPhase.text = if (mode == TimerMode.FOCUS) "■ MODE FOCUS ACTIF ■" else "■ PAUSE EN COURS ■"
+            tvPhase.text = if (mode == TimerMode.FOCUS) {
+                getString(R.string.overlay_focus_active)
+            } else {
+                getString(R.string.overlay_pause_active)
+            }
+            
+            if (mode == TimerMode.PAUSE) {
+                btnExit.text = getString(R.string.exit_pause_label)
+                btnExit.setTextColor(requireContext().getColor(R.color.neon_cyan))
+                // Sécurité : si on passe en pause, on ferme l'overlay pour éviter l'écran vide
+                if (!isSuccessFinished) {
+                    parentFragmentManager.popBackStack()
+                }
+            } else {
+                btnExit.text = getString(R.string.abandon_label)
+                btnExit.setTextColor(requireContext().getColor(R.color.neon_red))
+            }
         }
 
         viewModel.sessionCompleted.observe(viewLifecycleOwner) { completed ->
             if (completed == true) {
                 viewModel.consumeSessionCompletedEvent()
-                showCongratulationsAnimation(congratulationsOverlay)
+                isSuccessFinished = true
+                showCongratulationsAnimation(mainContent, congratulationsOverlay)
             }
         }
 
         btnExit.setOnClickListener {
-            showExitConfirmation()
+            if (viewModel.timerMode.value == TimerMode.PAUSE) {
+                parentFragmentManager.popBackStack()
+            } else {
+                showExitConfirmation()
+            }
         }
     }
 
-    private fun showCongratulationsAnimation(overlay: View) {
+    private fun showCongratulationsAnimation(content: View, overlay: View) {
+        content.visibility = View.GONE 
         overlay.visibility = View.VISIBLE
-        view?.findViewById<View>(R.id.btnExitFocus)?.visibility = View.GONE
         val anim = AnimationUtils.loadAnimation(requireContext(), R.anim.congratulations_pop)
         overlay.startAnimation(anim)
 
@@ -61,22 +85,21 @@ class FocusOverlayFragment : Fragment() {
             if (isAdded) {
                 overlay.visibility = View.GONE
                 parentFragmentManager.popBackStack()
+                // Redirection après succès
+                (activity as? MainActivity)?.navigateToTimer()
             }
         }, 5000)
     }
 
     override fun onStop() {
         super.onStop()
-        // Anti-triche : si on quitte l'app pendant un focus
-        if (!isPenalized && viewModel.timerMode.value == TimerMode.FOCUS && 
+        if (!isPenalized && !isSuccessFinished && 
+            viewModel.timerMode.value == TimerMode.FOCUS && 
             viewModel.timerState.value == TimerState.RUNNING) {
             
             isPenalized = true
             viewModel.applyEmergencyPenalty()
             viewModel.resetTimer()
-            
-            // On ne peut pas popBackStack ici (crash StateLoss), 
-            // le fragment sera retiré au prochain passage dans onResume ou via le reset.
         }
     }
 
@@ -84,6 +107,7 @@ class FocusOverlayFragment : Fragment() {
         super.onResume()
         if (isPenalized) {
             parentFragmentManager.popBackStack()
+            (activity as? MainActivity)?.navigateToTimer()
         } else {
             applyFullScreen(true)
         }
@@ -104,15 +128,17 @@ class FocusOverlayFragment : Fragment() {
 
     private fun showExitConfirmation() {
         AlertDialog.Builder(requireContext(), R.style.FocusZoneDialog)
-            .setTitle("Abandonner le focus ?")
-            .setMessage("Si tu quittes maintenant, tes jeux seront bloqués !")
-            .setPositiveButton("Quitter (Pénalité)") { _, _ ->
+            .setTitle(getString(R.string.exit_focus_title))
+            .setMessage(getString(R.string.exit_focus_msg))
+            .setPositiveButton(getString(R.string.exit_focus_confirm)) { _, _ ->
                 isPenalized = true
                 viewModel.applyEmergencyPenalty()
                 viewModel.resetTimer()
                 parentFragmentManager.popBackStack()
+                // Redirection immédiate après abandon
+                (activity as? MainActivity)?.navigateToTimer()
             }
-            .setNegativeButton("Continuer", null)
+            .setNegativeButton(getString(R.string.continue_label), null)
             .show()
     }
 

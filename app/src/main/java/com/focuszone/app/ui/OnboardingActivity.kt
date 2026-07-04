@@ -1,11 +1,13 @@
 package com.focuszone.app.ui
 
 import android.Manifest
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.os.PowerManager
 import android.provider.Settings
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
@@ -20,7 +22,7 @@ class OnboardingActivity : AppCompatActivity() {
     private lateinit var binding: ActivityOnboardingBinding
     private lateinit var prefs: PreferencesManager
     private var currentStep = 0
-    private val totalSteps = 5
+    private val totalSteps = 8
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -41,64 +43,66 @@ class OnboardingActivity : AppCompatActivity() {
             0 -> {
                 binding.onbIcon.text = "⚔️"
                 binding.onbTitle.text = "Bienvenue dans l'Arène"
-                binding.onbDesc.text = "FocusZone transforme ta productivité en combat.\nFais tes sessions, gagne de l'XP et protège l'accès à tes jeux."
-                binding.btnNext.text = "SUIVANT"
-                binding.btnSkip.visibility = View.VISIBLE
-                binding.btnSkip.text = "Passer"
+                binding.onbDesc.text = "FocusZone transforme ta productivité en combat.\nIci, ton temps est ta ressource la plus précieuse."
+                binding.btnNext.text = "COMMENCER"
                 binding.permBox.visibility = View.GONE
             }
             1 -> {
                 binding.onbIcon.text = "📱"
-                binding.onbTitle.text = "Le Focus Absolu"
-                binding.onbDesc.text = "Dès que tu lances un focus, l'écran se verrouille.\n⚠️ Attention : quitter l'application pendant un focus actif bloque tes jeux instantanément !"
-                binding.btnNext.text = "J'AI COMPRIS"
-                binding.btnSkip.visibility = View.VISIBLE
-                binding.permBox.visibility = View.GONE
+                binding.onbTitle.text = "Le Focus Sacré"
+                binding.onbDesc.text = "Dès que tu lances un focus, le mode plein écran s'active.\nL'interface se verrouille pour te garder concentré."
+                binding.btnNext.text = "SUIVANT"
             }
             2 -> {
-                binding.onbIcon.text = "⏰"
-                binding.onbTitle.text = "La Règle de 20h00"
-                binding.onbDesc.text = "Chaque soir à 20h00, FocusZone vérifie ton travail.\nSi tu as 0 session ou des missions non finies : Tes jeux sont bloqués pour la nuit !"
-                binding.btnNext.text = "RELEVER LE DÉFI"
-                binding.btnSkip.visibility = View.VISIBLE
-                binding.permBox.visibility = View.GONE
+                binding.onbIcon.text = "🚫"
+                binding.onbTitle.text = "Anti-Triche & Sanction"
+                binding.onbDesc.text = "⚠️ Si tu quittes l'application pendant le chrono, tes jeux sont bloqués immédiatement !\nNe fuis pas le combat."
+                binding.btnNext.text = "COMPRIS"
             }
             3 -> {
-                binding.onbIcon.text = "🔔"
-                binding.onbTitle.text = "Autorisations"
-                binding.onbDesc.text = "Pour te prévenir des missions et des pénalités, nous avons besoin d'envoyer des notifications."
-                binding.btnNext.text = "AUTORISER"
-                binding.btnSkip.visibility = View.VISIBLE
-                binding.btnSkip.text = "Plus tard"
-                binding.permBox.visibility = View.VISIBLE
-                binding.permTitle.text = "Permissions requises"
-                binding.permItems.text = "🔔 Notifications\n⏰ Alarmes exactes"
+                binding.onbIcon.text = "🎯"
+                binding.onbTitle.text = "Missions de Guerrier"
+                binding.onbDesc.text = "Crée tes missions. Si tu spécifies un temps de focus, clique sur la mission pour lancer le chrono sacré tout de suite."
+                binding.btnNext.text = "SUIVANT"
             }
             4 -> {
-                binding.onbIcon.text = "🚫"
-                binding.onbTitle.text = "Blocage des Jeux"
-                binding.onbDesc.text = "Pour pouvoir bloquer tes jeux en cas d'échec, tu dois activer le service d'accessibilité pour FocusZone."
-                binding.btnNext.text = "OUVRIR LES PARAMÈTRES"
-                binding.btnSkip.visibility = View.VISIBLE
-                binding.btnSkip.text = "Plus tard"
-                binding.permBox.visibility = View.VISIBLE
-                binding.permTitle.text = "Accessibilité"
-                binding.permItems.text = "⚙️ Paramètres → Accessibilité\n🔍 Activer \"FocusZone\""
+                binding.onbIcon.text = "⭐"
+                binding.onbTitle.text = "XP & Niveaux"
+                binding.onbDesc.text = "Gagne de l'XP pour chaque session et mission finie.\nMonte de niveau pour débloquer de nouveaux thèmes néons."
+                binding.btnNext.text = "SUIVANT"
+            }
+            5 -> {
+                binding.onbIcon.text = "⏰"
+                binding.onbTitle.text = "Le Juge de 20h00"
+                binding.onbDesc.text = "À l'heure choisie, si tes missions du jour ne sont pas cochées : Tes jeux sont bloqués !\n(Heure réglable dans les paramètres)."
+                binding.btnNext.text = "SUIVANT"
+            }
+            6 -> {
+                binding.onbIcon.text = "🔋"
+                binding.onbTitle.text = "Performance"
+                binding.onbDesc.text = "Pour que les sanctions et rappels fonctionnent, désactive l'économie de batterie pour FocusZone."
+                binding.btnNext.text = "OPTIMISER →"
+            }
+            7 -> {
+                binding.onbIcon.text = "⚙️"
+                binding.onbTitle.text = "Configuration"
+                binding.onbDesc.text = "Autorise les notifications et active le service d'accessibilité pour permettre le blocage des jeux."
+                binding.btnNext.text = "OUVRIR LES RÉGLAGES"
             }
         }
     }
 
     private fun handleNextClick() {
         when (currentStep) {
-            0, 1, 2 -> goToNextStep()
-            3 -> {
-                requestNotificationPermission()
+            0, 1, 2, 3, 4, 5 -> goToNextStep()
+            6 -> {
+                requestIgnoreBatteryOptimizations()
                 goToNextStep()
             }
-            4 -> {
-                if (binding.btnNext.text.toString().contains("PARAMÈTRES")) {
-                    openAccessibilitySettings()
-                    binding.btnNext.text = "TERMINER L'ENTRAÎNEMENT →"
+            7 -> {
+                if (binding.btnNext.text.toString().contains("RÉGLAGES")) {
+                    requestPermissionsAndSettings()
+                    binding.btnNext.text = "TERMINER →"
                 } else {
                     finishOnboarding()
                 }
@@ -107,36 +111,26 @@ class OnboardingActivity : AppCompatActivity() {
     }
 
     private fun goToNextStep() {
-        if (currentStep < totalSteps - 1) {
-            showStep(currentStep + 1)
-        } else {
-            finishOnboarding()
-        }
+        if (currentStep < totalSteps - 1) showStep(currentStep + 1)
+        else finishOnboarding()
     }
 
-    private fun requestNotificationPermission() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
-                != PackageManager.PERMISSION_GRANTED
-            ) {
-                ActivityCompat.requestPermissions(
-                    this,
-                    arrayOf(Manifest.permission.POST_NOTIFICATIONS),
-                    101
-                )
+    private fun requestIgnoreBatteryOptimizations() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            val pm = getSystemService(Context.POWER_SERVICE) as PowerManager
+            if (!pm.isIgnoringBatteryOptimizations(packageName)) {
+                val intent = Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS).apply {
+                    data = Uri.parse("package:$packageName")
+                }
+                try { startActivity(intent) } catch (e: Exception) {}
             }
         }
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            try {
-                val intent = Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM).apply {
-                    data = Uri.fromParts("package", packageName, null)
-                }
-                startActivity(intent)
-            } catch (e: Exception) {}
-        }
     }
 
-    private fun openAccessibilitySettings() {
+    private fun requestPermissionsAndSettings() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.POST_NOTIFICATIONS), 101)
+        }
         try {
             startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
         } catch (e: Exception) {

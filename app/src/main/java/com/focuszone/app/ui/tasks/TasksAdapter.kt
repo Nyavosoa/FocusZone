@@ -19,10 +19,9 @@ import java.util.*
 class TasksAdapter(
     private val onChecked: (Task) -> Unit,
     private val onEdit: (Task) -> Unit,
-    private val onDelete: (Task) -> Unit
+    private val onDelete: (Task) -> Unit,
+    private val onStartFocus: (Task) -> Unit
 ) : ListAdapter<Task, TasksAdapter.TaskViewHolder>(DIFF_CALLBACK) {
-
-    fun getTaskAt(position: Int): Task = getItem(position)
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TaskViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.item_task, parent, false)
@@ -40,42 +39,36 @@ class TasksAdapter(
         private val btnEdit: ImageButton = itemView.findViewById(R.id.btnEditTask)
         private val btnDelete: ImageButton = itemView.findViewById(R.id.btnDeleteTask)
         private val tvCustomFocusBadge: TextView = itemView.findViewById(R.id.tvCustomFocusBadge)
-        private val dot1: View = itemView.findViewById(R.id.dot1)
-        private val dot2: View = itemView.findViewById(R.id.dot2)
-        private val dot3: View = itemView.findViewById(R.id.dot3)
-        private val dot4: View = itemView.findViewById(R.id.dot4)
+        private val tvFinishedBadge: TextView = itemView.findViewById(R.id.tvFinishedBadge)
+        private val taskItemRoot: View = itemView.findViewById(R.id.taskItemRoot)
 
         fun bind(task: Task) {
             tvTaskName.text = task.name
             cbTask.isChecked = task.isCompleted
 
-            // Barré si terminé
-            tvTaskName.paintFlags = if (task.isCompleted)
-                tvTaskName.paintFlags or Paint.STRIKE_THRU_TEXT_FLAG
-            else
-                tvTaskName.paintFlags and Paint.STRIKE_THRU_TEXT_FLAG.inv()
+            if (task.isCompleted) {
+                tvTaskName.paintFlags = tvTaskName.paintFlags or Paint.STRIKE_THRU_TEXT_FLAG
+                taskItemRoot.alpha = 0.5f
+                tvFinishedBadge.visibility = View.VISIBLE
+                btnEdit.visibility = View.GONE
+            } else {
+                tvTaskName.paintFlags = tvTaskName.paintFlags and Paint.STRIKE_THRU_TEXT_FLAG.inv()
+                taskItemRoot.alpha = 1.0f
+                tvFinishedBadge.visibility = View.GONE
+                btnEdit.visibility = View.VISIBLE
+            }
 
-            tvTaskName.alpha = if (task.isCompleted) 0.5f else 1f
-
-            // Badge de Focus personnalisé
+            // MODIFICATION : On affiche le badge mais on ne permet plus de cliquer sur la ligne
+            // Le focus ne se lance QUE via la notification
             if (task.customFocusMinutes != null && task.customFocusMinutes > 0) {
                 tvCustomFocusBadge.visibility = View.VISIBLE
                 tvCustomFocusBadge.text = "⏱ ${task.customFocusMinutes} min"
             } else {
                 tvCustomFocusBadge.visibility = View.GONE
             }
+            itemView.setOnClickListener(null) 
 
-            // Libellé de notification
             tvNotifLabel.text = buildNotifLabel(task)
-
-            // Points Pomodoro
-            val dots = listOf(dot1, dot2, dot3, dot4)
-            dots.forEachIndexed { index, dot ->
-                dot.setBackgroundResource(
-                    if (index < task.pomodoroCount) R.drawable.bg_pomo_dot_filled
-                    else R.drawable.bg_pomo_dot
-                )
-            }
 
             cbTask.setOnClickListener { onChecked(task) }
             btnEdit.setOnClickListener { onEdit(task) }

@@ -1,10 +1,14 @@
 package com.focuszone.app.ui
 
 import android.Manifest
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.os.PowerManager
+import android.provider.Settings
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -12,25 +16,29 @@ import androidx.core.content.ContextCompat
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.setupWithNavController
 import com.focuszone.app.R
+import com.focuszone.app.data.model.RepeatType
+import com.focuszone.app.data.model.Task
 import com.focuszone.app.databinding.ActivityMainBinding
 import com.focuszone.app.service.AppBlockerService
 import com.focuszone.app.service.NotificationReceiver
 import com.focuszone.app.service.PenaltyTriggerWorker
+import com.focuszone.app.ui.timer.FocusOverlayFragment
 import com.focuszone.app.util.PreferencesManager
 import com.focuszone.app.viewmodel.TimerViewModel
 import java.text.NumberFormat
-import java.util.Locale
+import java.util.*
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
     private val viewModel: TimerViewModel by viewModels()
+    private var isOverlayPending = false
+    private var pendingTaskIdFromNotif: Long = -1L
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val prefs = PreferencesManager(this)
 
-        // Redirection vers l'onboarding si c'est le premier lancement
         if (!prefs.hasSeenOnboarding) {
             startTutorial()
             return
@@ -44,16 +52,13 @@ class MainActivity : AppCompatActivity() {
         setupListeners()
         handleIntent(intent)
         requestPermissions()
+        requestIgnoreBatteryOptimizations()
 
-        // Programmer la vérification quotidienne de la pénalité à 20:00
         PenaltyTriggerWorker.scheduleInitialCheck(this)
     }
 
     private fun setupListeners() {
-        // Bouton d'aide pour relancer le tutoriel
-        binding.btnHelp.setOnClickListener {
-            startTutorial(isManual = true)
-        }
+        binding.btnHelp.setOnClickListener { startTutorial(isManual = true) }
     }
 
     private fun startTutorial(isManual: Boolean = false) {
@@ -62,8 +67,23 @@ class MainActivity : AppCompatActivity() {
             startActivity(intent)
             finish()
         } else {
-            // Si lancé manuellement, on ne ferme pas la MainActivity
             startActivity(intent)
+        }
+    }
+
+    private fun requestIgnoreBatteryOptimizations() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            val intent = Intent()
+            val pm = getSystemService(Context.POWER_SERVICE) as PowerManager
+            if (!pm.isIgnoringBatteryOptimizations(packageName)) {
+                intent.action = Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS
+                intent.data = Uri.parse("package:$packageName")
+                try {
+                    startActivity(intent)
+                } catch (e: Exception) {
+                    startActivity(Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS))
+                }
+            }
         }
     }
 
@@ -74,19 +94,33 @@ class MainActivity : AppCompatActivity() {
 
     private fun handleIntent(intent: Intent?) {
         intent?.let {
-            // Navigation vers l'onglet des missions si demandé par la notification
+            if (it.hasExtra(NotificationReceiver.EXTRA_TASK_ID)) {
+                pendingTaskIdFromNotif = it.getLongExtra(NotificationReceiver.EXTRA_TASK_ID, -1L)
+            }
+
             if (it.getStringExtra("open_tab") == "tasks") {
                 val navHostFragment = supportFragmentManager
                     .findFragmentById(R.id.navHostFragment) as NavHostFragment
                 navHostFragment.navController.navigate(R.id.tasksFragment)
+                binding.bottomNav.selectedItemId = R.id.tasksFragment
             }
 
-            // Lancement d'un focus personnalisé si présent dans l'intent
             if (it.hasExtra(NotificationReceiver.EXTRA_CUSTOM_FOCUS)) {
                 val customMins = it.getIntExtra(NotificationReceiver.EXTRA_CUSTOM_FOCUS, 25)
-                viewModel.startCustomFocus(customMins)
+                launchFocusFullscreen(customMins)
             }
         }
+    }
+
+    fun launchFocusFullscreen(minutes: Int) {
+        viewModel.startCustomFocus(minutes)
+    }
+
+    fun navigateToTimer() {
+        val navHostFragment = supportFragmentManager
+            .findFragmentById(R.id.navHostFragment) as NavHostFragment
+        navHostFragment.navController.navigate(R.id.timerFragment)
+        binding.bottomNav.selectedItemId = R.id.timerFragment
     }
 
     private fun setupNavigation() {
@@ -99,28 +133,74 @@ class MainActivity : AppCompatActivity() {
     private fun setupObservers() {
         viewModel.userStats.observe(this) { stats ->
             stats?.let {
-                // Mise à jour du Streak dynamique
                 binding.tvStreak.text = getString(R.string.streak_format, it.currentStreak)
-
-                // Mise à jour de l'XP dynamique avec formatage (ex: 3,840 XP)
                 val formatter = NumberFormat.getNumberInstance(Locale.US)
-                val formattedXp = formatter.format(it.totalXp)
-                binding.tvXpBadge.text = getString(R.string.xp_badge_format, formattedXp)
-
-                // S'assure que le service de blocage est synchronisé avec la base de données
+                binding.tvXpBadge.text = getString(R.string.xp_badge_format, formatter.format(it.totalXp))
                 AppBlockerService.isBlocking = it.hasPenalty
             }
+        }
+
+        viewModel.allTasks.observe(this) { tasks ->
+            val today = Calendar.getInstance()
+            val tasksForToday = tasks.filter { isTaskDueToday(it, today) }
+            val completedToday = tasksForToday.count { it.isCompleted }
+            binding.tvMissionProgressTop.text = getString(R.string.mission_progress_format, completedToday, tasksForToday.size)
+        }
+
+        viewModel.autoLaunchFocus.observe(this) { shouldLaunch ->
+            if (shouldLaunch == true) {
+                viewModel.consumeAutoLaunchFocusEvent()
+                showFocusOverlay()
+            }
+        }
+
+        viewModel.sessionCompleted.observe(this) { completed ->
+            if (completed == true && pendingTaskIdFromNotif != -1L) {
+                viewModel.markTaskCompleted(pendingTaskIdFromNotif)
+                pendingTaskIdFromNotif = -1L
+            }
+        }
+    }
+
+    private fun isTaskDueToday(task: Task, today: Calendar): Boolean {
+        return when (task.repeatType) {
+            RepeatType.NONE -> false 
+            RepeatType.DAILY -> true
+            RepeatType.MONDAY -> today.get(Calendar.DAY_OF_WEEK) == Calendar.MONDAY
+            RepeatType.TUESDAY -> today.get(Calendar.DAY_OF_WEEK) == Calendar.TUESDAY
+            RepeatType.WEDNESDAY -> today.get(Calendar.DAY_OF_WEEK) == Calendar.WEDNESDAY
+            RepeatType.THURSDAY -> today.get(Calendar.DAY_OF_WEEK) == Calendar.THURSDAY
+            RepeatType.FRIDAY -> today.get(Calendar.DAY_OF_WEEK) == Calendar.FRIDAY
+            RepeatType.SATURDAY -> today.get(Calendar.DAY_OF_WEEK) == Calendar.SATURDAY
+            RepeatType.SUNDAY -> today.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY
+            RepeatType.SPECIFIC_DATE -> {
+                val taskCal = Calendar.getInstance().apply { timeInMillis = task.specificDateMillis ?: 0 }
+                taskCal.get(Calendar.YEAR) == today.get(Calendar.YEAR) &&
+                taskCal.get(Calendar.DAY_OF_YEAR) == today.get(Calendar.DAY_OF_YEAR)
+            }
+        }
+    }
+
+    private fun showFocusOverlay() {
+        if (supportFragmentManager.isStateSaved) return
+        
+        val existing = supportFragmentManager.findFragmentByTag("focus_overlay")
+        if (existing == null && !isOverlayPending) {
+            isOverlayPending = true
+            supportFragmentManager.beginTransaction()
+                .setCustomAnimations(R.anim.fade_in, R.anim.fade_out, R.anim.fade_in, R.anim.fade_out)
+                .add(android.R.id.content, FocusOverlayFragment(), "focus_overlay")
+                .addToBackStack(null)
+                .commitAllowingStateLoss()
+            
+            binding.root.post { isOverlayPending = false }
         }
     }
 
     private fun requestPermissions() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
-                != PackageManager.PERMISSION_GRANTED
-            ) {
-                ActivityCompat.requestPermissions(
-                    this, arrayOf(Manifest.permission.POST_NOTIFICATIONS), 100
-                )
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.POST_NOTIFICATIONS), 100)
             }
         }
     }

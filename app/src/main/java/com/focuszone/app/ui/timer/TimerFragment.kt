@@ -37,9 +37,7 @@ class TimerFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
         soundManager = SoundManager(requireContext())
-
         setupCircularProgressBar()
         setupListeners()
         observeViewModel()
@@ -47,189 +45,131 @@ class TimerFragment : Fragment() {
 
     private fun setupCircularProgressBar() {
         binding.circularProgressBar.apply {
-            progressMax        = 100f
-            progress           = 100f
-            progressBarWidth          = 6f
+            progressMax = 100f
+            progress = 100f
+            progressBarWidth = 6f
             backgroundProgressBarWidth = 6f
-            progressBarColor          = requireContext().getColor(R.color.neon_cyan)
-            backgroundProgressBarColor = 0x1400F5FF.toInt()
-            roundBorder        = true
-            startAngle         = 270f
-            progressDirection  = CircularProgressBar.ProgressDirection.TO_RIGHT
+            progressBarColor = requireContext().getColor(R.color.neon_cyan)
+            backgroundProgressBarColor = 0x1400F5FF
+            roundBorder = true
+            startAngle = 270f
+            progressDirection = CircularProgressBar.ProgressDirection.TO_RIGHT
         }
     }
 
     private fun setupListeners() {
-        // Play / Pause + Auto-launch Fullscreen
         binding.btnPlay.setOnClickListener {
             it.startAnimation(AnimationUtils.loadAnimation(requireContext(), R.anim.btn_scale))
-            
-            // Si on lance ou reprend une session de FOCUS, on passe en plein écran
-            if (viewModel.timerMode.value == TimerMode.FOCUS && viewModel.timerState.value != TimerState.RUNNING) {
-                launchFocusOverlay()
-            }
-            
             viewModel.togglePlayPause()
         }
 
-        // Reset
-        binding.btnReset.setOnClickListener {
-            viewModel.resetTimer()
+        binding.btnReset.setOnClickListener { viewModel.resetTimer() }
+
+        binding.btnSkipPause.setOnClickListener {
+            it.startAnimation(AnimationUtils.loadAnimation(requireContext(), R.anim.btn_scale))
+            viewModel.skipPause()
         }
 
-        // Fullscreen focus overlay manually
-        binding.btnFocusMode.setOnClickListener {
-            launchFocusOverlay()
-        }
+        binding.btnFocusMode.setOnClickListener { launchFocusOverlay() }
 
-        // Mode tab — FOCUS
         binding.tabFocus.setOnClickListener {
-            if (viewModel.timerState.value != TimerState.RUNNING) {
-                viewModel.switchMode(TimerMode.FOCUS)
-                updateTabsUI(TimerMode.FOCUS)
-            }
+            if (viewModel.timerState.value != TimerState.RUNNING) viewModel.switchMode(TimerMode.FOCUS)
         }
 
-        // Mode tab — PAUSE
         binding.tabPause.setOnClickListener {
-            if (viewModel.timerState.value != TimerState.RUNNING) {
-                viewModel.switchMode(TimerMode.PAUSE)
-                updateTabsUI(TimerMode.PAUSE)
-            }
+            if (viewModel.timerState.value != TimerState.RUNNING) viewModel.switchMode(TimerMode.PAUSE)
         }
 
-        // Click on duration labels to specify exact minutes
-        binding.tvFocusDuration.setOnClickListener {
-            showDurationInputDialog(isFocus = true)
-        }
-        binding.tvBreakDuration.setOnClickListener {
-            showDurationInputDialog(isFocus = false)
-        }
+        binding.tvFocusDuration.setOnClickListener { showDurationInputDialog(true) }
+        binding.tvBreakDuration.setOnClickListener { showDurationInputDialog(false) }
 
-        // Focus duration steppers (1min precision)
         binding.btnFocusMinus.setOnClickListener { viewModel.adjustFocusMinutes(-1) }
-        binding.btnFocusPlus.setOnClickListener  { viewModel.adjustFocusMinutes(1)  }
-
-        // Break duration steppers
+        binding.btnFocusPlus.setOnClickListener { viewModel.adjustFocusMinutes(1) }
         binding.btnBreakMinus.setOnClickListener { viewModel.adjustBreakMinutes(-1) }
-        binding.btnBreakPlus.setOnClickListener  { viewModel.adjustBreakMinutes(1)  }
+        binding.btnBreakPlus.setOnClickListener { viewModel.adjustBreakMinutes(1) }
     }
 
     private fun launchFocusOverlay() {
-        requireActivity().supportFragmentManager
-            .beginTransaction()
-            .add(android.R.id.content, FocusOverlayFragment())
-            .addToBackStack(null)
-            .commit()
+        val existing = parentFragmentManager.findFragmentByTag("focus_overlay")
+        if (existing == null) {
+            requireActivity().supportFragmentManager.beginTransaction()
+                .setCustomAnimations(R.anim.fade_in, R.anim.fade_out, R.anim.fade_in, R.anim.fade_out)
+                .add(android.R.id.content, FocusOverlayFragment(), "focus_overlay")
+                .addToBackStack(null)
+                .commit()
+        }
     }
 
     private fun showDurationInputDialog(isFocus: Boolean) {
-        val title = if (isFocus) "Durée du Focus" else "Durée de la Pause"
+        val title = if (isFocus) getString(R.string.focus_duration) else getString(R.string.pause_duration)
         val currentVal = if (isFocus) viewModel.focusMinutes.value ?: 25 else viewModel.breakMinutes.value ?: 5
-
         val editText = EditText(requireContext()).apply {
             inputType = InputType.TYPE_CLASS_NUMBER
             setText(currentVal.toString())
             setSelection(text.length)
         }
-
-        val container = android.widget.FrameLayout(requireContext())
-        val params = android.widget.FrameLayout.LayoutParams(
-            android.view.ViewGroup.LayoutParams.MATCH_PARENT,
-            android.view.ViewGroup.LayoutParams.WRAP_CONTENT
-        ).apply {
-            leftMargin = 60
-            rightMargin = 60
-            topMargin = 20
-            bottomMargin = 20
+        val container = android.widget.FrameLayout(requireContext()).apply {
+            val p = android.widget.FrameLayout.LayoutParams(-1, -1).apply { setMargins(60, 20, 60, 20) }
+            addView(editText, p)
         }
-        container.addView(editText, params)
-
         AlertDialog.Builder(requireContext(), R.style.FocusZoneDialog)
-            .setTitle(title)
-            .setMessage("Spécifiez le nombre de minutes :")
-            .setView(container)
-            .setPositiveButton("Valider") { _, _ ->
+            .setTitle(title).setView(container)
+            .setPositiveButton(getString(R.string.reset)) { _, _ ->
                 val input = editText.text.toString().toIntOrNull()
                 if (input != null && input > 0) {
-                    if (isFocus) viewModel.setFocusMinutes(input)
-                    else viewModel.setBreakMinutes(input)
+                    if (isFocus) viewModel.setFocusMinutes(input) else viewModel.setBreakMinutes(input)
                 }
-            }
-            .setNegativeButton("Annuler", null)
-            .show()
+            }.setNegativeButton("Annuler", null).show()
     }
 
     private fun observeViewModel() {
-
-        // Timer countdown
         viewModel.remainingSeconds.observe(viewLifecycleOwner) { seconds ->
             binding.tvTimerDisplay.text = viewModel.formatTime(seconds)
-            val progressPercent = viewModel.getProgress(seconds) * 100f
-            binding.circularProgressBar.setProgressWithAnimation(progressPercent, 800)
+            binding.circularProgressBar.setProgressWithAnimation(viewModel.getProgress(seconds) * 100f, 800)
         }
 
-        // Play / Pause button icon
         viewModel.timerState.observe(viewLifecycleOwner) { state ->
-            val iconRes = if (state == TimerState.RUNNING) R.drawable.ic_pause
-            else R.drawable.ic_play
-            binding.btnPlay.setImageResource(iconRes)
+            binding.btnPlay.setImageResource(if (state == TimerState.RUNNING) R.drawable.ic_pause else R.drawable.ic_play)
         }
 
-        // Phase label + tab highlight
         viewModel.timerMode.observe(viewLifecycleOwner) { mode ->
             updateTabsUI(mode)
-            binding.tvPhaseLabel.text = if (mode == TimerMode.FOCUS) "TEMPS DE FOCUS"
-            else "TEMPS DE PAUSE"
+            binding.tvPhaseLabel.text = if (mode == TimerMode.FOCUS) getString(R.string.focus_mode) else getString(R.string.pause_mode)
+            binding.btnSkipPause.visibility = if (mode == TimerMode.PAUSE) View.VISIBLE else View.GONE
         }
 
-        // Session counter
         viewModel.sessionCount.observe(viewLifecycleOwner) { count ->
-            binding.tvSessionCount.text = "Session ${count + 1} / 4"
+            binding.tvSessionCount.text = getString(R.string.session_count, count)
         }
 
-        // Durations
-        viewModel.focusMinutes.observe(viewLifecycleOwner) { mins ->
-            binding.tvFocusDuration.text = "$mins min"
+        viewModel.focusMinutes.observe(viewLifecycleOwner) { mins -> 
+            binding.tvFocusDuration.text = getString(R.string.duration_min_format, mins) 
         }
-        viewModel.breakMinutes.observe(viewLifecycleOwner) { mins ->
-            binding.tvBreakDuration.text = "$mins min"
+        viewModel.breakMinutes.observe(viewLifecycleOwner) { mins -> 
+            binding.tvBreakDuration.text = getString(R.string.duration_min_format, mins) 
         }
 
-        // Stats row
         viewModel.userStats.observe(viewLifecycleOwner) { stats ->
-            stats ?: return@observe
-
-            binding.tvStatSessions.text = stats.todaySessions.toString()
-            binding.tvStatXp.text       = "+${stats.todayXp}"
-
-            val h = stats.totalFocusMinutes / 60
-            val m = stats.totalFocusMinutes % 60
-            binding.tvStatTotal.text = if (h > 0) "${h}h${m}m" else "${m}m"
-
-            // Level-up sound
-            if (stats.level > previousLevel) {
-                soundManager.playLevelUp()
-                previousLevel = stats.level
+            stats?.let {
+                binding.tvStatSessions.text = it.todaySessions.toString()
+                binding.tvStatXp.text = getString(R.string.xp_gain_format, it.todayXp)
+                val h = it.totalFocusMinutes / 60
+                val m = it.totalFocusMinutes % 60
+                binding.tvStatTotal.text = if (h > 0) "${h}h${m}m" else "${m}m"
+                if (it.level > previousLevel) {
+                    soundManager.playLevelUp()
+                    previousLevel = it.level
+                }
             }
         }
-
-        // Note: L'animation de session terminée est maintenant gérée EXCLUSIVEMENT 
-        // par le FocusOverlayFragment pour éviter les doublons lors de la navigation.
     }
 
     private fun updateTabsUI(mode: TimerMode) {
-        if (mode == TimerMode.FOCUS) {
-            binding.tabFocus.setBackgroundResource(R.drawable.bg_mode_tab_active)
-            binding.tabFocus.setTextColor(requireContext().getColor(R.color.neon_cyan))
-            binding.tabPause.setBackgroundResource(android.R.color.transparent)
-            binding.tabPause.setTextColor(requireContext().getColor(R.color.text_muted))
-        } else {
-            binding.tabPause.setBackgroundResource(R.drawable.bg_mode_tab_active)
-            binding.tabPause.setTextColor(requireContext().getColor(R.color.neon_cyan))
-            binding.tabFocus.setBackgroundResource(android.R.color.transparent)
-            binding.tabFocus.setTextColor(requireContext().getColor(R.color.text_muted))
-        }
+        val isFocus = mode == TimerMode.FOCUS
+        binding.tabFocus.setBackgroundResource(if (isFocus) R.drawable.bg_mode_tab_active else android.R.color.transparent)
+        binding.tabFocus.setTextColor(requireContext().getColor(if (isFocus) R.color.neon_cyan else R.color.text_muted))
+        binding.tabPause.setBackgroundResource(if (!isFocus) R.drawable.bg_mode_tab_active else android.R.color.transparent)
+        binding.tabPause.setTextColor(requireContext().getColor(if (!isFocus) R.color.neon_cyan else R.color.text_muted))
     }
 
     override fun onDestroyView() {

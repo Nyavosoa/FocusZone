@@ -20,7 +20,6 @@ data class UserStats(
     val missedSessions: Int = 0
 ) {
     companion object {
-        // XP par niveau (level -> XP nécessaire pour ce niveau)
         fun xpRequiredForLevel(level: Int): Int = level * 1000
 
         fun levelFromXp(xp: Int): Int {
@@ -60,9 +59,9 @@ data class UserStats(
             10 to "DIEU DU FOCUS"
         )
 
-        // XP gagné
         const val XP_PER_SESSION = 40
-        const val XP_PER_TASK = 25 // Nouveau : XP pour une mission terminée
-        const val XP_STREAK_BONUS = 10 // bonus par jour de streak
+        const val XP_PER_TASK = 25
+        const val XP_STREAK_BONUS = 10
+        const val XP_PENALTY_LOSS = 15 // Réduction légère en cas de pénalité
     }
 }

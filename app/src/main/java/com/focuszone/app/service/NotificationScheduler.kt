@@ -18,7 +18,6 @@ class NotificationScheduler(private val context: Context) {
             action = NotificationReceiver.ACTION_TASK_REMINDER
             putExtra(NotificationReceiver.EXTRA_TASK_ID, task.id)
             putExtra(NotificationReceiver.EXTRA_TASK_NAME, task.name)
-            putExtra(NotificationReceiver.EXTRA_REPEAT_TYPE, task.repeatType.name)
             task.customFocusMinutes?.let {
                 putExtra(NotificationReceiver.EXTRA_CUSTOM_FOCUS, it)
             }
@@ -31,8 +30,6 @@ class NotificationScheduler(private val context: Context) {
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
-        // For simplicity and precision across all repeat types, we use one-shot alarms 
-        // that reschedule themselves in the receiver
         alarmManager.setExactAndAllowWhileIdle(
             AlarmManager.RTC_WAKEUP,
             triggerAt,
@@ -66,7 +63,6 @@ class NotificationScheduler(private val context: Context) {
             set(Calendar.MILLISECOND, 0)
         }
 
-        // If today matches or we need to find the next valid day
         while (true) {
             val isCorrectDay = when (task.repeatType) {
                 RepeatType.DAILY -> true

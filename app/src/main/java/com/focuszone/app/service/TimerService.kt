@@ -19,18 +19,22 @@ class TimerService : Service() {
         const val ACTION_PAUSE = "ACTION_PAUSE"
         const val ACTION_RESUME = "ACTION_RESUME"
         const val ACTION_STOP = "ACTION_STOP"
+        const val ACTION_SKIP_PAUSE = "ACTION_SKIP_PAUSE"
         const val EXTRA_SECONDS = "EXTRA_SECONDS"
         const val EXTRA_MODE = "EXTRA_MODE"
         const val CHANNEL_ID = "TIMER_CHANNEL"
         const val NOTIF_ID = 1001
         const val FINISH_NOTIF_ID = 1002
+        const val CYCLE_COMPLETE_NOTIF_ID = 1004
 
         val remainingSeconds = MutableLiveData(0)
         val timerState = MutableLiveData(TimerState.IDLE)
         val timerMode = MutableLiveData(TimerMode.FOCUS)
+        val sessionCount = MutableLiveData(1) 
     }
 
     private var timerJob: Job? = null
+    private var transitionJob: Job? = null
     private var currentSeconds = 0
     private val serviceScope = CoroutineScope(Dispatchers.Default + SupervisorJob())
 
@@ -42,6 +46,10 @@ class TimerService : Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         when (intent?.action) {
             ACTION_START -> {
+                transitionJob?.cancel()
+                if (timerState.value == TimerState.IDLE) {
+                    sessionCount.postValue(1)
+                }
                 currentSeconds = intent.getIntExtra(EXTRA_SECONDS, 25 * 60)
                 val modeStr = intent.getStringExtra(EXTRA_MODE) ?: TimerMode.FOCUS.name
                 timerMode.postValue(TimerMode.valueOf(modeStr))
@@ -60,11 +68,15 @@ class TimerService : Service() {
             ACTION_STOP -> {
                 stopTimer()
             }
+            ACTION_SKIP_PAUSE -> {
+                handleSkipPause()
+            }
         }
         return START_NOT_STICKY
     }
 
     private fun startCountdown() {
+        timerJob?.cancel()
         timerState.postValue(TimerState.RUNNING)
         timerJob = serviceScope.launch {
             while (currentSeconds > 0) {
@@ -81,29 +93,46 @@ class TimerService : Service() {
 
     private fun handleTimerFinished() {
         val oldMode = timerMode.value
-        
-        // 1. On signale la fin (déclenche l'animation dans l'UI)
         timerState.postValue(TimerState.FINISHED)
-        sendFinishNotification(oldMode)
-
-        serviceScope.launch {
-            // 2. SI C'ÉTAIT UN FOCUS : On attend 5 secondes pour l'animation de félicitations
-            if (oldMode == TimerMode.FOCUS) {
-                delay(5500L) // Un peu plus de 5s pour être sûr que l'UI a fini
-            }
-
-            // 3. Basculer sur le mode suivant
-            val newMode = if (oldMode == TimerMode.FOCUS) TimerMode.PAUSE else TimerMode.FOCUS
+        
+        transitionJob?.cancel()
+        transitionJob = serviceScope.launch {
             val prefs = PreferencesManager(this@TimerService)
-            val nextDuration = if (newMode == TimerMode.FOCUS) prefs.focusMinutes * 60 else prefs.breakMinutes * 60
-
-            currentSeconds = nextDuration
-            timerMode.postValue(newMode)
-            remainingSeconds.postValue(currentSeconds)
-
-            // 4. Lancer automatiquement le cycle suivant
-            startCountdown()
+            if (oldMode == TimerMode.FOCUS) {
+                val currentSess = sessionCount.value ?: 1
+                if (currentSess >= 4) {
+                    // CYCLE POMODORO TERMINÉ
+                    sendPomodoroCompleteNotification()
+                    stopTimer()
+                } else {
+                    // Session normale finie -> Pause
+                    sendFinishNotification(oldMode)
+                    delay(5500L) // Animation de succès
+                    sessionCount.postValue(currentSess + 1)
+                    currentSeconds = prefs.breakMinutes * 60
+                    timerMode.postValue(TimerMode.PAUSE)
+                    remainingSeconds.postValue(currentSeconds)
+                    startCountdown()
+                }
+            } else {
+                // Pause terminée -> Focus suivant
+                sendFinishNotification(oldMode)
+                currentSeconds = prefs.focusMinutes * 60
+                timerMode.postValue(TimerMode.FOCUS)
+                remainingSeconds.postValue(currentSeconds)
+                startCountdown()
+            }
         }
+    }
+
+    private fun handleSkipPause() {
+        transitionJob?.cancel()
+        timerJob?.cancel()
+        val prefs = PreferencesManager(this)
+        currentSeconds = prefs.focusMinutes * 60
+        timerMode.postValue(TimerMode.FOCUS)
+        remainingSeconds.postValue(currentSeconds)
+        startCountdown()
     }
 
     private fun sendFinishNotification(finishedMode: TimerMode?) {
@@ -126,8 +155,27 @@ class TimerService : Service() {
         manager.notify(FINISH_NOTIF_ID, builder.build())
     }
 
+    private fun sendPomodoroCompleteNotification() {
+        val manager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+        val intent = Intent(this, MainActivity::class.java)
+        val pendingIntent = PendingIntent.getActivity(this, 2, intent, PendingIntent.FLAG_IMMUTABLE)
+
+        val builder = NotificationCompat.Builder(this, CHANNEL_ID)
+            .setSmallIcon(R.drawable.ic_timer_notif)
+            .setContentTitle(getString(R.string.pomodoro_complete_title))
+            .setContentText(getString(R.string.pomodoro_complete_text))
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setCategory(NotificationCompat.CATEGORY_EVENT)
+            .setAutoCancel(true)
+            .setContentIntent(pendingIntent)
+            .setVibrate(longArrayOf(0, 800, 200, 800))
+
+        manager.notify(CYCLE_COMPLETE_NOTIF_ID, builder.build())
+    }
+
     private fun stopTimer() {
         timerJob?.cancel()
+        transitionJob?.cancel()
         timerState.postValue(TimerState.IDLE)
         stopForeground(STOP_FOREGROUND_REMOVE)
         stopSelf()
@@ -151,10 +199,11 @@ class TimerService : Service() {
         val ss = seconds % 60
         val timeStr = "%02d:%02d".format(mm, ss)
         val modeLabel = if (timerMode.value == TimerMode.FOCUS) "Focus" else "Pause"
+        val currentSess = sessionCount.value ?: 1
         val pendingIntent = PendingIntent.getActivity(this, 0, Intent(this, MainActivity::class.java), PendingIntent.FLAG_IMMUTABLE)
 
         return NotificationCompat.Builder(this, CHANNEL_ID)
-            .setContentTitle("FocusZone — $modeLabel")
+            .setContentTitle("FocusZone — $modeLabel ($currentSess/4)")
             .setContentText("$timeStr restantes")
             .setSmallIcon(R.drawable.ic_timer_notif)
             .setContentIntent(pendingIntent)
@@ -174,6 +223,7 @@ class TimerService : Service() {
     override fun onDestroy() {
         super.onDestroy()
         timerJob?.cancel()
+        transitionJob?.cancel()
         serviceScope.cancel()
     }
 }

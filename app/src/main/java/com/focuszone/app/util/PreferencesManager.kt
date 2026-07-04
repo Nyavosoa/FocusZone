@@ -19,7 +19,28 @@ class PreferencesManager(context: Context) {
         get() = prefs.getBoolean("seen_onboarding", false)
         set(value) = prefs.edit { putBoolean("seen_onboarding", value) }
 
-    var isAccessibilityEnabled: Boolean
-        get() = prefs.getBoolean("accessibility_enabled", false)
-        set(value) = prefs.edit { putBoolean("accessibility_enabled", value) }
+    var penaltyCheckHour: Int
+        get() = prefs.getInt("penalty_check_hour", 20)
+        set(value) = prefs.edit { putInt("penalty_check_hour", value) }
+
+    var penaltyCheckMinute: Int
+        get() = prefs.getInt("penalty_check_minute", 0)
+        set(value) = prefs.edit { putInt("penalty_check_minute", value) }
+
+    var notificationSoundUri: String?
+        get() = prefs.getString("notif_sound_uri", null)
+        set(value) = prefs.edit { putString("notif_sound_uri", value) }
+
+    var blockedPackages: Set<String>
+        get() = prefs.getStringSet("blocked_packages", emptySet())?.toSet() ?: emptySet()
+        set(value) {
+            prefs.edit {
+                if (value.isEmpty()) {
+                    remove("blocked_packages")
+                } else {
+                    // Toujours créer une nouvelle copie pour SharedPreferences
+                    putStringSet("blocked_packages", value.toSet())
+                }
+            }
+        }
 }

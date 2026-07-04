@@ -10,6 +10,7 @@
     app:cardElevation="0dp">
 
     <LinearLayout
+        android:id="@+id/taskItemRoot"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
@@ -37,9 +38,26 @@
                 android:layout_height="wrap_content"
                 android:text="Nom de la mission"
                 android:textSize="14sp"
-                android:fontFamily="sans-serif"
+                android:fontFamily="sans-serif-medium"
                 android:textColor="@color/text_primary"
                 android:lineSpacingMultiplier="1.2"/>
+
+            <!-- Finished Badge -->
+            <TextView
+                android:id="@+id/tvFinishedBadge"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="✓ TERMINÉ"
+                android:textSize="8sp"
+                android:textStyle="bold"
+                android:textColor="@color/neon_green"
+                android:background="@drawable/bg_badge_unlocked"
+                android:paddingStart="6dp"
+                android:paddingEnd="6dp"
+                android:paddingTop="2dp"
+                android:paddingBottom="2dp"
+                android:layout_marginEnd="8dp"
+                android:visibility="gone"/>
 
             <ImageButton
                 android:id="@+id/btnEditTask"

@@ -5,14 +5,12 @@
     android:layout_height="match_parent"
     android:background="@color/bg_deep">
 
-    <!-- Grid bg (Arrière-plan) -->
     <View
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="@drawable/bg_grid"
         android:alpha="0.3"/>
 
-    <!-- Contenu principal -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -20,7 +18,6 @@
         android:gravity="center_horizontal"
         android:padding="28dp">
 
-        <!-- Logo -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -31,7 +28,6 @@
             android:textColor="@color/neon_cyan"
             android:layout_marginBottom="32dp"/>
 
-        <!-- Icon -->
         <TextView
             android:id="@+id/onbIcon"
             android:layout_width="wrap_content"
@@ -41,12 +37,11 @@
             android:gravity="center"
             android:layout_marginBottom="20dp"/>
 
-        <!-- Title -->
         <TextView
             android:id="@+id/onbTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Bienvenue dans FocusZone"
+            android:text="Bienvenue"
             android:fontFamily="sans-serif"
             android:textSize="16sp"
             android:textColor="@color/neon_cyan"
@@ -54,18 +49,16 @@
             android:gravity="center"
             android:layout_marginBottom="14dp"/>
 
-        <!-- Description -->
         <TextView
             android:id="@+id/onbDesc"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:textSize="13sp"
-            android:textColor="@color/text_muted"
+            android:textColor="@color/text_primary"
             android:gravity="center"
             android:lineSpacingMultiplier="1.6"
             android:layout_marginBottom="24dp"/>
 
-        <!-- Permission box -->
         <LinearLayout
             android:id="@+id/permBox"
             android:layout_width="match_parent"
@@ -90,13 +83,12 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:textSize="12sp"
-                android:textColor="@color/text_muted"
+                android:textColor="@color/text_primary"
                 android:lineSpacingMultiplier="1.7"/>
         </LinearLayout>
 
         <View android:layout_width="0dp" android:layout_height="0dp" android:layout_weight="1"/>
 
-        <!-- Dots Container -->
         <LinearLayout
             android:id="@+id/dotContainer"
             android:layout_width="wrap_content"
@@ -105,16 +97,15 @@
             android:gravity="center"
             android:layout_marginBottom="20dp"/>
 
-        <!-- Next button -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnNext"
             style="@style/ButtonPrimary"
             android:layout_width="match_parent"
             android:layout_height="52dp"
             android:layout_marginBottom="12dp"
-            android:text="SUIVANT" />
+            android:text="SUIVANT"
+            android:textColor="@color/white" />
 
-        <!-- Skip button -->
         <TextView
             android:id="@+id/btnSkip"
             android:layout_width="wrap_content"

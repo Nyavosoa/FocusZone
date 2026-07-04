@@ -5,35 +5,23 @@ import android.content.Intent
 import android.view.accessibility.AccessibilityEvent
 import com.focuszone.app.data.db.AppDatabase
 import com.focuszone.app.ui.PenaltyBlockActivity
+import com.focuszone.app.util.PreferencesManager
 import kotlinx.coroutines.*
 
 class AppBlockerService : AccessibilityService() {
 
-    // List of game package names to block during penalty
     companion object {
-        val BLOCKED_GAME_PACKAGES = setOf(
-            "com.mobile.legends",
-            "com.garena.game.freefire",
-            "com.dts.freefiremax",
-            "com.ea.gp.fifamobile",
-            "com.riotgames.league.wildrift",
-            "com.activision.callofduty.shooter",
-            "com.supercell.clashofclans",
-            "com.supercell.clashroyale",
-            "com.mojang.minecraftpe",
-            "com.epicgames.fortnite",
-            "com.roblox.client",
-            "com.miHoYo.GenshinImpact"
-        )
-
         var isBlocking = false
     }
 
     private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
+    private lateinit var prefs: PreferencesManager
 
     override fun onServiceConnected() {
         super.onServiceConnected()
-        // Initialisation automatique du blocage au démarrage du service
+        prefs = PreferencesManager(applicationContext)
+        
+        // Synchronisation initiale de l'état de blocage
         scope.launch {
             val db = AppDatabase.getDatabase(applicationContext)
             val stats = db.userStatsDao().getStatsOnce()
@@ -45,11 +33,15 @@ class AppBlockerService : AccessibilityService() {
         if (event?.eventType != AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) return
         val packageName = event.packageName?.toString() ?: return
 
-        if (packageName in BLOCKED_GAME_PACKAGES && isBlocking) {
-            // Double vérification avec la base de données pour plus de sécurité
+        // On ne bloque QUE les packages sélectionnés par l'utilisateur
+        val userBlockedPackages = prefs.blockedPackages
+        
+        if (isBlocking && userBlockedPackages.isNotEmpty() && packageName in userBlockedPackages) {
             scope.launch {
                 val db = AppDatabase.getDatabase(applicationContext)
                 val stats = db.userStatsDao().getStatsOnce()
+                
+                // Double vérification avec la base de données
                 if (stats?.hasPenalty == true) {
                     withContext(Dispatchers.Main) {
                         showPenaltyScreen()
@@ -66,9 +58,7 @@ class AppBlockerService : AccessibilityService() {
         startActivity(intent)
     }
 
-    override fun onInterrupt() {
-        scope.cancel()
-    }
+    override fun onInterrupt() {}
 
     override fun onDestroy() {
         super.onDestroy()

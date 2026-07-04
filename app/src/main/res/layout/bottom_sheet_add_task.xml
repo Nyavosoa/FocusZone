@@ -106,16 +106,16 @@
             android:layout_height="wrap_content"
             app:singleSelection="true">
 
-            <com.google.android.material.chip.Chip android:id="@+id/chipRepeatNone" android:layout_width="wrap_content" android:layout_height="wrap_content" style="@style/RepeatChip" android:text="AUCUN" android:checked="true"/>
-            <com.google.android.material.chip.Chip android:id="@+id/chipRepeatDaily" android:layout_width="wrap_content" android:layout_height="wrap_content" style="@style/RepeatChip" android:text="QUOTIDIEN"/>
-            <com.google.android.material.chip.Chip android:id="@+id/chipMon" android:layout_width="wrap_content" android:layout_height="wrap_content" style="@style/RepeatChip" android:text="LUN"/>
-            <com.google.android.material.chip.Chip android:id="@+id/chipTue" android:layout_width="wrap_content" android:layout_height="wrap_content" style="@style/RepeatChip" android:text="MAR"/>
-            <com.google.android.material.chip.Chip android:id="@+id/chipWed" android:layout_width="wrap_content" android:layout_height="wrap_content" style="@style/RepeatChip" android:text="MER"/>
-            <com.google.android.material.chip.Chip android:id="@+id/chipThu" android:layout_width="wrap_content" android:layout_height="wrap_content" style="@style/RepeatChip" android:text="JEU"/>
-            <com.google.android.material.chip.Chip android:id="@+id/chipFri" android:layout_width="wrap_content" android:layout_height="wrap_content" style="@style/RepeatChip" android:text="VEN"/>
-            <com.google.android.material.chip.Chip android:id="@+id/chipSat" android:layout_width="wrap_content" android:layout_height="wrap_content" style="@style/RepeatChip" android:text="SAM"/>
-            <com.google.android.material.chip.Chip android:id="@+id/chipSun" android:layout_width="wrap_content" android:layout_height="wrap_content" style="@style/RepeatChip" android:text="DIM"/>
-            <com.google.android.material.chip.Chip android:id="@+id/chipRepeatSpecific" android:layout_width="wrap_content" android:layout_height="wrap_content" style="@style/RepeatChip" android:text="DATE…"/>
+            <com.google.android.material.chip.Chip android:id="@+id/chipRepeatNone" android:layout_width="wrap_content" android:layout_height="wrap_content" style="@style/RepeatChip" android:text="AUCUN" android:checked="true" android:textColor="@color/white"/>
+            <com.google.android.material.chip.Chip android:id="@+id/chipRepeatDaily" android:layout_width="wrap_content" android:layout_height="wrap_content" style="@style/RepeatChip" android:text="QUOTIDIEN" android:textColor="@color/white"/>
+            <com.google.android.material.chip.Chip android:id="@+id/chipMon" android:layout_width="wrap_content" android:layout_height="wrap_content" style="@style/RepeatChip" android:text="LUN" android:textColor="@color/white"/>
+            <com.google.android.material.chip.Chip android:id="@+id/chipTue" android:layout_width="wrap_content" android:layout_height="wrap_content" style="@style/RepeatChip" android:text="MAR" android:textColor="@color/white"/>
+            <com.google.android.material.chip.Chip android:id="@+id/chipWed" android:layout_width="wrap_content" android:layout_height="wrap_content" style="@style/RepeatChip" android:text="MER" android:textColor="@color/white"/>
+            <com.google.android.material.chip.Chip android:id="@+id/chipThu" android:layout_width="wrap_content" android:layout_height="wrap_content" style="@style/RepeatChip" android:text="JEU" android:textColor="@color/white"/>
+            <com.google.android.material.chip.Chip android:id="@+id/chipFri" android:layout_width="wrap_content" android:layout_height="wrap_content" style="@style/RepeatChip" android:text="VEN" android:textColor="@color/white"/>
+            <com.google.android.material.chip.Chip android:id="@+id/chipSat" android:layout_width="wrap_content" android:layout_height="wrap_content" style="@style/RepeatChip" android:text="SAM" android:textColor="@color/white"/>
+            <com.google.android.material.chip.Chip android:id="@+id/chipSun" android:layout_width="wrap_content" android:layout_height="wrap_content" style="@style/RepeatChip" android:text="DIM" android:textColor="@color/white"/>
+            <com.google.android.material.chip.Chip android:id="@+id/chipRepeatSpecific" android:layout_width="wrap_content" android:layout_height="wrap_content" style="@style/RepeatChip" android:text="DATE…" android:textColor="@color/white"/>
 
         </com.google.android.material.chip.ChipGroup>
     </HorizontalScrollView>
@@ -145,7 +145,7 @@
             android:id="@+id/btnPickTime"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="MODIFIER L'HEURE"
+            android:text="CHANGER HEURE"
             android:textColor="@color/neon_cyan"
             android:textSize="11sp"
             android:textStyle="bold"/>

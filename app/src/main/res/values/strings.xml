@@ -31,4 +31,20 @@
 
     <string name="streak_format">🔥 %1$d</string>
     <string name="xp_badge_format">⬡ %1$s XP</string>
+    <string name="xp_gain_format">+%1$d</string>
+    <string name="duration_min_format">%1$d min</string>
+
+    <string name="overlay_focus_active">■ MODE FOCUS ACTIF ■</string>
+    <string name="overlay_pause_active">■ PAUSE EN COURS ■</string>
+    <string name="exit_focus_title">Abandonner le focus ?</string>
+    <string name="exit_focus_msg">Si tu quittes maintenant, tes jeux seront bloqués !</string>
+    <string name="exit_focus_confirm">Quitter (Pénalité)</string>
+    <string name="continue_label">Continuer</string>
+    <string name="exit_pause_label">⊗ QUITTER LA PAUSE</string>
+    <string name="abandon_label">⊗ ABANDONNER</string>
+
+    <string name="pomodoro_complete_title">Cycle Pomodoro Terminé ! 🏆</string>
+    <string name="pomodoro_complete_text">Félicitations, tu as accompli tes 4 sessions de focus !</string>
+
+    <string name="mission_progress_format">🎯 %1$d/%2$d</string>
 </resources>

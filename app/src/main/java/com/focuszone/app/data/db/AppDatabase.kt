@@ -11,7 +11,7 @@ import kotlinx.coroutines.launch
 
 @Database(
     entities = [Task::class, UserStats::class],
-    version = 100, // Version très élevée pour forcer le reset total
+    version = 200, // Reset complet pour corriger les crashs de structure
     exportSchema = false
 )
 @TypeConverters(Converters::class)

@@ -7,36 +7,30 @@
     android:layout_height="match_parent"
     android:background="@color/bg_deep">
 
-    <!-- Grid background overlay -->
     <View
         android:id="@+id/gridBg"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="@drawable/bg_grid"
-        android:alpha="0.4"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"/>
+        android:alpha="0.4"/>
 
-    <!-- Top Nav Bar -->
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/topNavBar"
         android:layout_width="match_parent"
         android:layout_height="56dp"
         android:background="@drawable/bg_top_nav"
-        android:paddingStart="20dp"
-        android:paddingEnd="20dp"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toStartOf="parent">
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        app:layout_constraintTop_toTopOf="parent">
 
         <TextView
             android:id="@+id/tvLogo"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="FOCUS"
-            android:fontFamily="sans-serif"
+            android:fontFamily="sans-serif-black"
             android:textSize="16sp"
             android:textColor="@color/neon_cyan"
-            android:letterSpacing="0.15"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"/>
@@ -46,26 +40,29 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="ZONE"
-            android:fontFamily="sans-serif"
+            android:fontFamily="sans-serif-black"
             android:textSize="16sp"
             android:textColor="@color/neon_purple"
-            android:letterSpacing="0.15"
             app:layout_constraintStart_toEndOf="@id/tvLogo"
             app:layout_constraintBaseline_toBaselineOf="@id/tvLogo"/>
 
-        <!-- Help Icon -->
-        <ImageView
-            android:id="@+id/btnHelp"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
-            android:src="@drawable/ic_help"
-            android:padding="6dp"
+        <!-- Missions Count -->
+        <TextView
+            android:id="@+id/tvMissionProgressTop"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="🎯 0/0"
+            android:textSize="11sp"
+            android:textColor="@color/white"
+            android:background="@drawable/bg_stat_cell"
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp"
+            android:paddingTop="4dp"
+            android:paddingBottom="4dp"
             android:layout_marginEnd="8dp"
-            android:background="?attr/selectableItemBackgroundBorderless"
             app:layout_constraintEnd_toStartOf="@id/tvStreak"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent"
-            android:contentDescription="Aide"/>
+            app:layout_constraintBottom_toBottomOf="parent"/>
 
         <!-- Streak -->
         <TextView
@@ -75,12 +72,11 @@
             tools:text="🔥 12"
             android:textSize="13sp"
             android:textColor="#FF6B35"
-            android:fontFamily="sans-serif"
-            android:fontWeight="600"
+            android:fontFamily="sans-serif-bold"
+            android:layout_marginEnd="8dp"
             app:layout_constraintEnd_toStartOf="@id/tvXpBadge"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent"
-            android:layout_marginEnd="10dp"/>
+            app:layout_constraintBottom_toBottomOf="parent"/>
 
         <!-- XP Badge -->
         <TextView
@@ -88,7 +84,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             tools:text="⬡ 3,840 XP"
-            android:fontFamily="sans-serif"
+            android:fontFamily="sans-serif-bold"
             android:textSize="10sp"
             android:textColor="@color/neon_gold"
             android:paddingStart="10dp"
@@ -100,9 +96,16 @@
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"/>
 
+        <ImageView
+            android:id="@+id/btnHelp"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:src="@drawable/ic_help"
+            android:visibility="gone"
+            app:layout_constraintStart_toStartOf="parent"/>
+
     </androidx.constraintlayout.widget.ConstraintLayout>
 
-    <!-- NavHost Fragment -->
     <androidx.fragment.app.FragmentContainerView
         android:id="@+id/navHostFragment"
         android:name="androidx.navigation.fragment.NavHostFragment"
@@ -111,11 +114,8 @@
         app:defaultNavHost="true"
         app:navGraph="@navigation/nav_graph"
         app:layout_constraintTop_toBottomOf="@id/topNavBar"
-        app:layout_constraintBottom_toTopOf="@id/bottomNav"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
+        app:layout_constraintBottom_toTopOf="@id/bottomNav"/>
 
-    <!-- Bottom Navigation -->
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottomNav"
         android:layout_width="match_parent"
@@ -125,8 +125,6 @@
         app:itemIconTint="@color/bottom_nav_icon_selector"
         app:itemTextColor="@color/bottom_nav_text_selector"
         app:labelVisibilityMode="labeled"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
+        app:layout_constraintBottom_toBottomOf="parent"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

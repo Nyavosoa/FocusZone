@@ -42,7 +42,6 @@ class TasksViewModel(application: Application) : AndroidViewModel(application) {
                 id
             }
 
-            // Programmer ou mettre à jour la notification
             if (repeatType != RepeatType.NONE) {
                 notificationScheduler.scheduleTaskReminder(task.copy(id = finalId))
             } else {
@@ -53,6 +52,7 @@ class TasksViewModel(application: Application) : AndroidViewModel(application) {
 
     fun toggleTaskCompleted(task: Task) {
         viewModelScope.launch {
+            // Correction du nom de la méthode vers le repository
             repo.setTaskCompleted(task.id, !task.isCompleted)
         }
     }

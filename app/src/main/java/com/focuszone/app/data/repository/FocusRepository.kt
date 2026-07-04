@@ -68,6 +68,18 @@ class FocusRepository(context: Context) {
         statsDao.getStatsOnce()
     }
 
+    suspend fun applyPenaltyWithXpLoss() = withContext(Dispatchers.IO) {
+        val stats = statsDao.getStatsOnce() ?: return@withContext
+        // Réduction légère d'XP définie dans UserStats.kt (15 XP)
+        val newTotalXp = (stats.totalXp - UserStats.XP_PENALTY_LOSS).coerceAtLeast(0)
+        
+        statsDao.updateStats(stats.copy(
+            hasPenalty = true,
+            totalXp = newTotalXp,
+            todayXp = stats.todayXp - UserStats.XP_PENALTY_LOSS
+        ))
+    }
+
     suspend fun onSessionCompleted(focusMinutes: Int) = withContext(Dispatchers.IO) {
         val stats = statsDao.getStatsOnce() ?: return@withContext
         val xpGained = UserStats.XP_PER_SESSION + (stats.currentStreak * UserStats.XP_STREAK_BONUS)

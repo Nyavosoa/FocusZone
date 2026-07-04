@@ -16,6 +16,7 @@ import com.focuszone.app.R
 import com.focuszone.app.data.model.RepeatType
 import com.focuszone.app.data.model.Task
 import com.focuszone.app.databinding.FragmentTasksBinding
+import com.focuszone.app.ui.MainActivity
 import com.focuszone.app.viewmodel.TasksViewModel
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.chip.ChipGroup
@@ -49,7 +50,12 @@ class TasksFragment : Fragment() {
         tasksAdapter = TasksAdapter(
             onChecked = { task -> viewModel.toggleTaskCompleted(task) },
             onEdit = { task -> showAddTaskBottomSheet(task) },
-            onDelete = { task -> showDeleteConfirmation(task) }
+            onDelete = { task -> showDeleteConfirmation(task) },
+            onStartFocus = { task ->
+                // Action: Lancement immédiat du mode plein écran sacré
+                val customMins = task.customFocusMinutes ?: 25
+                (activity as? MainActivity)?.launchFocusFullscreen(customMins)
+            }
         )
         binding.rvTasks.apply {
             layoutManager = LinearLayoutManager(requireContext())
@@ -85,7 +91,6 @@ class TasksFragment : Fragment() {
         val sheetView = layoutInflater.inflate(R.layout.bottom_sheet_add_task, null)
         dialog.setContentView(sheetView)
 
-        // 1. Récupération des vues (EN PREMIER pour éviter les crashs)
         val tvSheetTitle = sheetView.findViewById<TextView>(R.id.tvSheetTitle)
         val etTaskName = sheetView.findViewById<TextInputEditText>(R.id.etTaskName)
         val etCustomFocus = sheetView.findViewById<TextInputEditText>(R.id.etCustomFocus)
@@ -102,7 +107,6 @@ class TasksFragment : Fragment() {
         var selectedMinute = taskToEdit?.reminderMinute ?: 0
         var selectedDateMillis: Long? = taskToEdit?.specificDateMillis
 
-        // 2. Remplissage si mode modification
         if (taskToEdit != null) {
             tvSheetTitle.text = "MODIFIER LA MISSION"
             etTaskName.setText(taskToEdit.name)
@@ -123,21 +127,21 @@ class TasksFragment : Fragment() {
             }
             chipGroupRepeat.check(chipId)
             
-            if (taskToEdit.repeatType == RepeatType.SPECIFIC_DATE && selectedDateMillis != null) {
+            val initialDateSnapshot = selectedDateMillis
+            if (taskToEdit.repeatType == RepeatType.SPECIFIC_DATE && initialDateSnapshot != null) {
                 val fmt = SimpleDateFormat("dd MMMM yyyy", Locale.FRENCH)
-                tvSelectedDate.text = fmt.format(Date(selectedDateMillis))
+                tvSelectedDate.text = fmt.format(Date(initialDateSnapshot))
                 tvSelectedDate.setTextColor(requireContext().getColor(R.color.text_primary))
             }
         }
 
-        // 3. Gestion de l'affichage dynamique
-        fun updatePickers() {
+        fun updatePickersVisibility() {
             val checkedId = chipGroupRepeat.checkedChipId
             layoutTimePicker.visibility = if (checkedId == R.id.chipRepeatNone) View.GONE else View.VISIBLE
             layoutDatePicker.visibility = if (checkedId == R.id.chipRepeatSpecific) View.VISIBLE else View.GONE
         }
-        updatePickers()
-        chipGroupRepeat.setOnCheckedStateChangeListener { _, _ -> updatePickers() }
+        updatePickersVisibility()
+        chipGroupRepeat.setOnCheckedStateChangeListener { _, _ -> updatePickersVisibility() }
 
         btnPickTime.setOnClickListener {
             TimePickerDialog(requireContext(), { _, h, m ->
@@ -150,7 +154,7 @@ class TasksFragment : Fragment() {
             val cal = Calendar.getInstance()
             selectedDateMillis?.let { cal.timeInMillis = it }
             DatePickerDialog(requireContext(), { _, y, m, d ->
-                cal.set(y, m, d, 9, 0, 0)
+                cal.set(y, m, d) 
                 selectedDateMillis = cal.timeInMillis
                 tvSelectedDate.text = SimpleDateFormat("dd MMMM yyyy", Locale.FRENCH).format(cal.time)
                 tvSelectedDate.setTextColor(requireContext().getColor(R.color.text_primary))
@@ -162,6 +166,18 @@ class TasksFragment : Fragment() {
             if (name.isNullOrBlank()) {
                 etTaskName.error = "Donne un nom à ta mission !"
                 return@setOnClickListener
+            }
+
+            // CORRECTION SMART CAST : On utilise une variable locale immuable pour le traitement
+            val dateSnapshot = selectedDateMillis
+            val finalDateMillis = dateSnapshot?.let { millis ->
+                Calendar.getInstance().apply {
+                    timeInMillis = millis
+                    set(Calendar.HOUR_OF_DAY, selectedHour)
+                    set(Calendar.MINUTE, selectedMinute)
+                    set(Calendar.SECOND, 0)
+                    set(Calendar.MILLISECOND, 0)
+                }.timeInMillis
             }
 
             val repeatType = when (chipGroupRepeat.checkedChipId) {
@@ -183,7 +199,7 @@ class TasksFragment : Fragment() {
                 repeatType = repeatType,
                 reminderHour = selectedHour,
                 reminderMinute = selectedMinute,
-                specificDateMillis = selectedDateMillis,
+                specificDateMillis = finalDateMillis,
                 customFocusMinutes = etCustomFocus.text?.toString()?.toIntOrNull()
             )
             dialog.dismiss()
