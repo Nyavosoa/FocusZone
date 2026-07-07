@@ -33,7 +33,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     private val viewModel: TimerViewModel by viewModels()
     private var isOverlayPending = false
-    private var pendingTaskIdFromNotif: Long = -1L
+    private var pendingTaskId: Long = -1L // ID de la mission en cours (notif ou manuel)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -95,7 +95,7 @@ class MainActivity : AppCompatActivity() {
     private fun handleIntent(intent: Intent?) {
         intent?.let {
             if (it.hasExtra(NotificationReceiver.EXTRA_TASK_ID)) {
-                pendingTaskIdFromNotif = it.getLongExtra(NotificationReceiver.EXTRA_TASK_ID, -1L)
+                pendingTaskId = it.getLongExtra(NotificationReceiver.EXTRA_TASK_ID, -1L)
             }
 
             if (it.getStringExtra("open_tab") == "tasks") {
@@ -112,7 +112,9 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    fun launchFocusFullscreen(minutes: Int) {
+    // Ajout de taskId pour le lancement manuel depuis TasksFragment
+    fun launchFocusFullscreen(minutes: Int, taskId: Long = -1L) {
+        if (taskId != -1L) pendingTaskId = taskId
         viewModel.startCustomFocus(minutes)
     }
 
@@ -142,9 +144,10 @@ class MainActivity : AppCompatActivity() {
 
         viewModel.allTasks.observe(this) { tasks ->
             val today = Calendar.getInstance()
+            // Logique modifiée : on compte les tâches prévues aujourd'hui OU les tâches sans répétition non finies
             val tasksForToday = tasks.filter { isTaskDueToday(it, today) }
             val completedToday = tasksForToday.count { it.isCompleted }
-            binding.tvMissionProgressTop.text = getString(R.string.mission_progress_format, completedToday, tasksForToday.size)
+            binding.tvMissionProgressTop.text = "🎯 $completedToday/${tasksForToday.size}"
         }
 
         viewModel.autoLaunchFocus.observe(this) { shouldLaunch ->
@@ -155,16 +158,19 @@ class MainActivity : AppCompatActivity() {
         }
 
         viewModel.sessionCompleted.observe(this) { completed ->
-            if (completed == true && pendingTaskIdFromNotif != -1L) {
-                viewModel.markTaskCompleted(pendingTaskIdFromNotif)
-                pendingTaskIdFromNotif = -1L
+            if (completed == true && pendingTaskId != -1L) {
+                viewModel.markTaskCompleted(pendingTaskId)
+                pendingTaskId = -1L
             }
         }
     }
 
     private fun isTaskDueToday(task: Task, today: Calendar): Boolean {
+        // Si c'est une tâche sans répétition, elle est due si elle n'est pas faite
+        // ou si elle a été faite aujourd'hui.
+        if (task.repeatType == RepeatType.NONE) return !task.isCompleted
+        
         return when (task.repeatType) {
-            RepeatType.NONE -> false 
             RepeatType.DAILY -> true
             RepeatType.MONDAY -> today.get(Calendar.DAY_OF_WEEK) == Calendar.MONDAY
             RepeatType.TUESDAY -> today.get(Calendar.DAY_OF_WEEK) == Calendar.TUESDAY
@@ -178,21 +184,19 @@ class MainActivity : AppCompatActivity() {
                 taskCal.get(Calendar.YEAR) == today.get(Calendar.YEAR) &&
                 taskCal.get(Calendar.DAY_OF_YEAR) == today.get(Calendar.DAY_OF_YEAR)
             }
+            else -> false
         }
     }
 
     fun showFocusOverlay() {
         if (supportFragmentManager.isStateSaved) return
-        
         val existing = supportFragmentManager.findFragmentByTag("focus_overlay")
         if (existing == null && !isOverlayPending) {
             isOverlayPending = true
-            // Changement : On ne met plus dans la backstack pour les overlays auto-gérés
             supportFragmentManager.beginTransaction()
                 .setCustomAnimations(R.anim.fade_in, R.anim.fade_out)
                 .add(android.R.id.content, FocusOverlayFragment(), "focus_overlay")
                 .commitAllowingStateLoss()
-            
             binding.root.post { isOverlayPending = false }
         }
     }

@@ -47,29 +47,30 @@ class TasksAdapter(
             cbTask.isChecked = task.isCompleted
 
             if (task.isCompleted) {
+                // Style Todo-list rayé
                 tvTaskName.paintFlags = tvTaskName.paintFlags or Paint.STRIKE_THRU_TEXT_FLAG
-                taskItemRoot.alpha = 0.5f
+                tvTaskName.setTextColor(itemView.context.getColor(R.color.text_muted))
+                taskItemRoot.alpha = 0.6f
                 tvFinishedBadge.visibility = View.VISIBLE
                 btnEdit.visibility = View.GONE
+                tvCustomFocusBadge.visibility = View.GONE
             } else {
                 tvTaskName.paintFlags = tvTaskName.paintFlags and Paint.STRIKE_THRU_TEXT_FLAG.inv()
+                tvTaskName.setTextColor(itemView.context.getColor(R.color.text_primary))
                 taskItemRoot.alpha = 1.0f
                 tvFinishedBadge.visibility = View.GONE
                 btnEdit.visibility = View.VISIBLE
+                
+                if (task.customFocusMinutes != null && task.customFocusMinutes > 0) {
+                    tvCustomFocusBadge.visibility = View.VISIBLE
+                    tvCustomFocusBadge.text = "⚔️ Lancer ${task.customFocusMinutes}m"
+                    tvCustomFocusBadge.setOnClickListener { onStartFocus(task) }
+                } else {
+                    tvCustomFocusBadge.visibility = View.GONE
+                }
             }
-
-            // MODIFICATION : On affiche le badge mais on ne permet plus de cliquer sur la ligne
-            // Le focus ne se lance QUE via la notification
-            if (task.customFocusMinutes != null && task.customFocusMinutes > 0) {
-                tvCustomFocusBadge.visibility = View.VISIBLE
-                tvCustomFocusBadge.text = "⏱ ${task.customFocusMinutes} min"
-            } else {
-                tvCustomFocusBadge.visibility = View.GONE
-            }
-            itemView.setOnClickListener(null) 
 
             tvNotifLabel.text = buildNotifLabel(task)
-
             cbTask.setOnClickListener { onChecked(task) }
             btnEdit.setOnClickListener { onEdit(task) }
             btnDelete.setOnClickListener { onDelete(task) }
@@ -78,8 +79,8 @@ class TasksAdapter(
         private fun buildNotifLabel(task: Task): String {
             val time = "%02d:%02d".format(task.reminderHour, task.reminderMinute)
             return when (task.repeatType) {
-                RepeatType.NONE -> "Pas de rappel"
-                RepeatType.DAILY -> "Tous les jours • $time"
+                RepeatType.NONE -> "Mission unique"
+                RepeatType.DAILY -> "Quotidien • $time"
                 RepeatType.MONDAY -> "Lundi • $time"
                 RepeatType.TUESDAY -> "Mardi • $time"
                 RepeatType.WEDNESDAY -> "Mercredi • $time"
@@ -89,8 +90,7 @@ class TasksAdapter(
                 RepeatType.SUNDAY -> "Dimanche • $time"
                 RepeatType.SPECIFIC_DATE -> {
                     val millis = task.specificDateMillis ?: return "Date spécifique"
-                    val fmt = SimpleDateFormat("dd MMM yyyy", Locale.FRENCH)
-                    fmt.format(Date(millis))
+                    SimpleDateFormat("dd MMM", Locale.FRENCH).format(Date(millis)) + " • $time"
                 }
             }
         }

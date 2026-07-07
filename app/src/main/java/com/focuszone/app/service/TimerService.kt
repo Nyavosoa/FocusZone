@@ -36,6 +36,7 @@ class TimerService : Service() {
     private var timerJob: Job? = null
     private var transitionJob: Job? = null
     private var currentSeconds = 0
+    private var sessionFocusDuration = 25 * 60 // Mémorise la durée du focus pour le cycle
     private val serviceScope = CoroutineScope(Dispatchers.Default + SupervisorJob())
 
     override fun onCreate() {
@@ -47,12 +48,19 @@ class TimerService : Service() {
         when (intent?.action) {
             ACTION_START -> {
                 transitionJob?.cancel()
-                if (timerState.value == TimerState.IDLE) {
+                if (timerState.value == TimerState.IDLE || timerState.value == TimerState.FINISHED) {
                     sessionCount.postValue(1)
                 }
-                currentSeconds = intent.getIntExtra(EXTRA_SECONDS, 25 * 60)
+                
                 val modeStr = intent.getStringExtra(EXTRA_MODE) ?: TimerMode.FOCUS.name
-                timerMode.postValue(TimerMode.valueOf(modeStr))
+                val mode = TimerMode.valueOf(modeStr)
+                timerMode.postValue(mode)
+                
+                currentSeconds = intent.getIntExtra(EXTRA_SECONDS, 25 * 60)
+                if (mode == TimerMode.FOCUS) {
+                    sessionFocusDuration = currentSeconds // On fixe la durée pour tout le cycle Pomodoro
+                }
+                
                 remainingSeconds.postValue(currentSeconds)
                 startCountdown()
                 startForeground(NOTIF_ID, buildNotification(currentSeconds))
@@ -101,13 +109,13 @@ class TimerService : Service() {
             if (oldMode == TimerMode.FOCUS) {
                 val currentSess = sessionCount.value ?: 1
                 if (currentSess >= 4) {
-                    // CYCLE POMODORO TERMINÉ
+                    // CYCLE POMODORO TERMINÉ (4 sessions faites)
                     sendPomodoroCompleteNotification()
                     stopTimer()
                 } else {
-                    // Session normale finie -> Pause
+                    // Passage en pause
                     sendFinishNotification(oldMode)
-                    delay(5500L) // Animation de succès
+                    delay(5500L) // Temps pour l'overlay de succès
                     sessionCount.postValue(currentSess + 1)
                     currentSeconds = prefs.breakMinutes * 60
                     timerMode.postValue(TimerMode.PAUSE)
@@ -115,9 +123,9 @@ class TimerService : Service() {
                     startCountdown()
                 }
             } else {
-                // Pause terminée -> Focus suivant
+                // Fin de pause -> Retour au Focus avec la durée mémorisée
                 sendFinishNotification(oldMode)
-                currentSeconds = prefs.focusMinutes * 60
+                currentSeconds = sessionFocusDuration
                 timerMode.postValue(TimerMode.FOCUS)
                 remainingSeconds.postValue(currentSeconds)
                 startCountdown()
@@ -128,8 +136,7 @@ class TimerService : Service() {
     private fun handleSkipPause() {
         transitionJob?.cancel()
         timerJob?.cancel()
-        val prefs = PreferencesManager(this)
-        currentSeconds = prefs.focusMinutes * 60
+        currentSeconds = sessionFocusDuration
         timerMode.postValue(TimerMode.FOCUS)
         remainingSeconds.postValue(currentSeconds)
         startCountdown()
