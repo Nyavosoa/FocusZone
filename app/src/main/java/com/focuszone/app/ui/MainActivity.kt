@@ -181,16 +181,16 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun showFocusOverlay() {
+    fun showFocusOverlay() {
         if (supportFragmentManager.isStateSaved) return
         
         val existing = supportFragmentManager.findFragmentByTag("focus_overlay")
         if (existing == null && !isOverlayPending) {
             isOverlayPending = true
+            // Changement : On ne met plus dans la backstack pour les overlays auto-gérés
             supportFragmentManager.beginTransaction()
-                .setCustomAnimations(R.anim.fade_in, R.anim.fade_out, R.anim.fade_in, R.anim.fade_out)
+                .setCustomAnimations(R.anim.fade_in, R.anim.fade_out)
                 .add(android.R.id.content, FocusOverlayFragment(), "focus_overlay")
-                .addToBackStack(null)
                 .commitAllowingStateLoss()
             
             binding.root.post { isOverlayPending = false }

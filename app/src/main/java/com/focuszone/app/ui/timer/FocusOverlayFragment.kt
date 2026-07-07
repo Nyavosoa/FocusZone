@@ -48,9 +48,8 @@ class FocusOverlayFragment : Fragment() {
             if (mode == TimerMode.PAUSE) {
                 btnExit.text = getString(R.string.exit_pause_label)
                 btnExit.setTextColor(requireContext().getColor(R.color.neon_cyan))
-                // Sécurité : si on passe en pause, on ferme l'overlay pour éviter l'écran vide
                 if (!isSuccessFinished) {
-                    parentFragmentManager.popBackStack()
+                    closeOverlay()
                 }
             } else {
                 btnExit.text = getString(R.string.abandon_label)
@@ -68,7 +67,7 @@ class FocusOverlayFragment : Fragment() {
 
         btnExit.setOnClickListener {
             if (viewModel.timerMode.value == TimerMode.PAUSE) {
-                parentFragmentManager.popBackStack()
+                closeOverlay()
             } else {
                 showExitConfirmation()
             }
@@ -83,12 +82,24 @@ class FocusOverlayFragment : Fragment() {
 
         overlay.postDelayed({
             if (isAdded) {
-                overlay.visibility = View.GONE
-                parentFragmentManager.popBackStack()
-                // Redirection après succès
-                (activity as? MainActivity)?.navigateToTimer()
+                closeOverlay()
             }
-        }, 5000)
+        }, 3500) // 3.5 secondes de célébration
+    }
+
+    private fun closeOverlay() {
+        if (!isAdded) return
+        
+        applyFullScreen(false)
+        
+        // Retrait immédiat du fragment de la vue de l'activité
+        parentFragmentManager.beginTransaction()
+            .setCustomAnimations(0, R.anim.fade_out)
+            .remove(this)
+            .commitAllowingStateLoss()
+        
+        // Redirection vers l'écran principal (Timer)
+        (activity as? MainActivity)?.navigateToTimer()
     }
 
     override fun onStop() {
@@ -106,8 +117,7 @@ class FocusOverlayFragment : Fragment() {
     override fun onResume() {
         super.onResume()
         if (isPenalized) {
-            parentFragmentManager.popBackStack()
-            (activity as? MainActivity)?.navigateToTimer()
+            closeOverlay()
         } else {
             applyFullScreen(true)
         }
@@ -134,9 +144,7 @@ class FocusOverlayFragment : Fragment() {
                 isPenalized = true
                 viewModel.applyEmergencyPenalty()
                 viewModel.resetTimer()
-                parentFragmentManager.popBackStack()
-                // Redirection immédiate après abandon
-                (activity as? MainActivity)?.navigateToTimer()
+                closeOverlay()
             }
             .setNegativeButton(getString(R.string.continue_label), null)
             .show()

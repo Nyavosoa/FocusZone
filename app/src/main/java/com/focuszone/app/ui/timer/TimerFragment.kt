@@ -92,10 +92,11 @@ class TimerFragment : Fragment() {
     private fun launchFocusOverlay() {
         val existing = parentFragmentManager.findFragmentByTag("focus_overlay")
         if (existing == null) {
+            // Suppression de addToBackStack pour éviter l'écran noir lors de la navigation
+            // et harmonisation avec le comportement de fermeture manuelle.
             requireActivity().supportFragmentManager.beginTransaction()
-                .setCustomAnimations(R.anim.fade_in, R.anim.fade_out, R.anim.fade_in, R.anim.fade_out)
+                .setCustomAnimations(R.anim.fade_in, R.anim.fade_out)
                 .add(android.R.id.content, FocusOverlayFragment(), "focus_overlay")
-                .addToBackStack(null)
                 .commit()
         }
     }
