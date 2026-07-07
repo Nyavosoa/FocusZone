@@ -89,7 +89,8 @@ class NotificationReceiver : BroadcastReceiver() {
                 putExtra("open_tab", "tasks")
                 putExtra(EXTRA_TASK_ID, taskId)
                 customFocus?.let { putExtra(EXTRA_CUSTOM_FOCUS, it) }
-                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+                // Changement de CLEAR_TOP vers SINGLE_TOP pour éviter la destruction de l'activité
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP
             },
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )

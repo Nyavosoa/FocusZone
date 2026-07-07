@@ -54,6 +54,9 @@ class TimerViewModel(application: Application) : AndroidViewModel(application) {
 
     private var isOverlayTriggeredForThisSession = false
     private var currentSessionDuration = 25
+    
+    // Timestamp pour éviter les pénalités accidentelles au démarrage (bug notification)
+    private var focusStartTime = 0L
 
     private val remainingSecondsObserver = Observer<Int> { secs ->
         _remainingSeconds.postValue(secs)
@@ -115,6 +118,7 @@ class TimerViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun startTimer() {
+        focusStartTime = System.currentTimeMillis()
         currentSessionDuration = if (_timerMode.value == TimerMode.FOCUS) (_focusMinutes.value ?: 25) else (_breakMinutes.value ?: 5)
         val app = getApplication<Application>()
         val intent = Intent(app, TimerService::class.java).apply {
@@ -126,7 +130,7 @@ class TimerViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun startCustomFocus(minutes: Int) {
-        // Force instant state for UI
+        focusStartTime = System.currentTimeMillis()
         currentSessionDuration = minutes
         _timerState.value = TimerState.RUNNING
         _timerMode.value = TimerMode.FOCUS
@@ -232,6 +236,11 @@ class TimerViewModel(application: Application) : AndroidViewModel(application) {
     fun getXpRequiredForLevel(level: Int): Int = UserStats.xpRequiredForLevel(level)
 
     fun applyEmergencyPenalty() {
+        // GRACE PERIOD : Si le focus a commencé il y a moins de 10 secondes, on ignore la pénalité.
+        // Cela règle le bug du clic sur notification qui déclenche onStop() prématurément.
+        val elapsed = System.currentTimeMillis() - focusStartTime
+        if (elapsed < 10000) return 
+
         viewModelScope.launch {
             repo.applyPenaltyWithXpLoss()
             AppBlockerService.isBlocking = true

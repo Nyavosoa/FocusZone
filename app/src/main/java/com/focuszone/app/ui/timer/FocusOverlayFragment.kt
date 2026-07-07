@@ -21,6 +21,7 @@ class FocusOverlayFragment : Fragment() {
     private val viewModel: TimerViewModel by activityViewModels()
     private var isPenalized = false
     private var isSuccessFinished = false
+    private var canTriggerPenalty = false // Sécurité pour éviter les faux déclenchements au démarrage
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         applyFullScreen(true)
@@ -72,6 +73,13 @@ class FocusOverlayFragment : Fragment() {
                 showExitConfirmation()
             }
         }
+
+        // Autoriser la pénalité seulement après 2 secondes de présence réelle à l'écran
+        view.postDelayed({
+            if (isAdded) {
+                canTriggerPenalty = true
+            }
+        }, 2000)
     }
 
     private fun showCongratulationsAnimation(content: View, overlay: View) {
@@ -104,7 +112,8 @@ class FocusOverlayFragment : Fragment() {
 
     override fun onStop() {
         super.onStop()
-        if (!isPenalized && !isSuccessFinished && 
+        // La pénalité ne se déclenche que si le fragment était bien actif (canTriggerPenalty)
+        if (canTriggerPenalty && !isPenalized && !isSuccessFinished &&
             viewModel.timerMode.value == TimerMode.FOCUS && 
             viewModel.timerState.value == TimerState.RUNNING) {
             
